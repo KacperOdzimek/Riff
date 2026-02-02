@@ -12,7 +12,7 @@ Optional macro params:
     Dynamic Array
     Data structure, dynamically resizing, 
     when it's size is to small to perform a push call
-    O(n) memory complexity
+    O(n) ~ O(2n) memory complexity
 */
 
 #include "generic.h"
@@ -68,10 +68,18 @@ void FUNC_IMPL(dynarr_destroy)(NAME* tar) {
 #endif
 
 /*
+    Memory
+*/
+
+// dynarr_resize
+// dynarr_reserve
+// dynarr_shrink_to_fit
+
+/*
     Access
 */
 
-inline T1* FUNC_IMPL(dynarr_access)(NAME* arr) {
+T1* FUNC_IMPL(dynarr_access)(NAME* arr) {
     return (T1*)arr->priv_data;
 }
 
@@ -84,7 +92,7 @@ inline T1* FUNC_IMPL(dynarr_access)(NAME* arr) {
     #define dynarr_access(LSU, tar) FUNC_RESP(dynarr_access, LSU)(tar)
 #endif
 
-inline const T1* FUNC_IMPL(dynarr_const_access)(const NAME* arr) {
+const T1* FUNC_IMPL(dynarr_const_access)(const NAME* arr) {
     return (const T1*)arr->priv_data;
 }
 
@@ -133,11 +141,12 @@ int FUNC_IMPL(dynarr_pop)(NAME* arr, T1* out) {
 
 #ifndef dynarr_pop
     // Pops last element of the dynamic array
-    // If out is nullptr destructor (if provided) will be called on the poped object
+    // If out is null destructor (if provided) will be called on the poped object
     // Else object will be moved into *out
     // May fail (nothing to pop), O(1)
     #define dynarr_pop(LSU, tar, out) FUNC_RESP(dynarr_pop, LSU)(tar, out)
 #endif
 
-#undef NAME
+#undef D_CALL
 #undef D_LOOP
+#undef NAME

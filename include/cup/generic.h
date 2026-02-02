@@ -7,10 +7,10 @@
 #define NAME_MAKE(base, suf)      CAT(base, suf)
 
 // for making type specific functions implementations
-#define FUNC_IMPL(func_name)      CAT(CAT(func_name, _implementation_for_), SU)
+#define FUNC_IMPL(func_name)      CAT(CAT(cup_implementation_of_, func_name), CAT(_for_, SU))
 
 // for making dispatch macros
-#define FUNC_RESP(func_name, LSU) CAT(CAT(func_name, _implementation_for_), LSU)
+#define FUNC_RESP(func_name, LSU) CAT(CAT(cup_implementation_of_, func_name), CAT(_for_, LSU))
 
 #define SCC 1
 #define ERR 0
