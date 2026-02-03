@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GENERIC_H
+#define GENERIC_H
 
 #define CAT2(a, b) a##b
 #define CAT(a, b)  CAT2(a, b)
@@ -15,7 +16,17 @@
 #define SCC 1
 #define ERR 0
 
+#endif // GENERIC_H
+
 // default allocator
 #ifndef A
     #define A malloc
+#endif
+
+#ifndef R
+    #define R realloc
+#endif
+
+#ifndef F
+    #define F free
 #endif

@@ -5,7 +5,9 @@ Mandatory macro params:
 
 Optional macro params:
     D1 - destructor for stored type                 (do not define if none)
-    A  - custom allocator, same signature as malloc (optional, defaults to malloc)
+    A  - custom allocator, same signature as malloc (defaults to malloc)
+    R  - custom matching reallocator                (defaults to realloc)
+    F  - custom matching free                       (defaults to free)
 */
 
 /*
@@ -42,7 +44,7 @@ int FUNC_IMPL(dynarr_init)(NAME* tar, size_t inital_capacity) {
     if (inital_capacity == 0) inital_capacity = 1;
     tar->priv_size = 0;
     tar->priv_data = (T1*)A(inital_capacity * sizeof(T1));
-    if (!tar->priv_data) return ERR; // return with clear state {0, 0, 0}
+    if (!tar->priv_data) return ERR; // allocation error
     tar->priv_capc = inital_capacity;
     return SCC;
 }
@@ -55,7 +57,7 @@ int FUNC_IMPL(dynarr_init)(NAME* tar, size_t inital_capacity) {
 
 void FUNC_IMPL(dynarr_destroy)(NAME* tar) {
     D_LOOP(tar->priv_data, tar->priv_data + tar->priv_size);
-    free(tar->priv_data);
+    F(tar->priv_data);
     tar->priv_data = NULL;
     tar->priv_capc = 0;
     tar->priv_size = 0;
@@ -71,9 +73,41 @@ void FUNC_IMPL(dynarr_destroy)(NAME* tar) {
     Memory
 */
 
-// dynarr_resize
-// dynarr_reserve
-// dynarr_shrink_to_fit
+int FUNC_IMPL(dynarr_reserve)(NAME* arr, size_t capacity) {
+    if (arr->priv_capc >= capacity) return SCC; // already have
+    T1* new_data = R(arr->priv_data, capacity * sizeof(T1));
+    if (!new_data) return ERR; // realloc failed
+    arr->priv_data = new_data;
+    arr->priv_capc = capacity;
+    return SCC;
+}
+
+#ifndef dynarr_reserve
+    // Ensures dynamic array have at least given capacity (in total, not left)
+    // May fail, O(1) else realocation time complexity
+    #define dynarr_reserve(LSU) FUNC_RESP(dynarr_reserve, LSU)
+#endif
+
+int FUNC_IMPL(dynarr_shrink_to_fit)(NAME* arr) {
+    size_t new_cap = arr->priv_size;
+    if (new_cap == 0) new_cap++; // never cause data to be NULL
+    
+    if (arr->priv_capc == new_cap) return SCC; // already shrunk
+    
+    T1* new_data = R(arr->priv_data, new_cap * sizeof(T1));
+    if (!new_data) return ERR; // realocation failed
+
+    arr->priv_data = new_data;
+    arr->priv_capc = new_cap;
+    return SCC;
+}
+
+#ifndef dynarr_shrink_to_fit
+    // Realoc array's memory into a block which tightly fit (to a minimum of 1 object)
+    // arrays elements. If already shrunk, no effect.
+    // May fail, O(1) else realocation time compelxity
+    #define dynarr_shrink_to_fit(LSU) FUNC_RESP(dynarr_shrink_to_fit, LSU)
+#endif
 
 /*
     Access
@@ -109,11 +143,10 @@ const T1* FUNC_IMPL(dynarr_const_access)(const NAME* arr) {
 
 int FUNC_IMPL(dynarr_push)(NAME* arr, T1 value) {
     if (arr->priv_size >= arr->priv_capc) {
-        // Resize: double capacity
-        arr->priv_capc *= 2;
-        // all objects transfered
-        void* new_data = realloc(arr->priv_data, arr->priv_capc * sizeof(T1));
+        size_t new_cap = arr->priv_capc * 2;
+        void* new_data = R(arr->priv_data, new_cap * sizeof(T1));
         if (!new_data) return ERR; // allocation failed
+        arr->priv_capc = new_cap;
         arr->priv_data = new_data;
     }
     ((T1*)arr->priv_data)[arr->priv_size++] = value;

@@ -3,7 +3,8 @@
 
 // clear allocator
 #undef  A
-#define A malloc
+#undef  R
+#undef  F
 
 // undef types
 #undef T1
