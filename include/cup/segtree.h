@@ -2,8 +2,7 @@
 Mandatory macro params:
     SU - name suffix
     T1 - stored type
-    F1 - T1(func)(T1 l, T1 r) - the function for changes
-    F2 - T1(func)(T1 l, T1 r) - the function for quaries
+    F1 - T1(func)(T1 l, T1 r) - tree associative function: sum, min, max, ...
 
 Optional macro params:
     A  - custom allocator, same signature as malloc (defaults to malloc)
@@ -105,6 +104,7 @@ void FUNC_IMPL(segtree_change)(NAME* tar, size_t pos, T1 val) {
 #ifndef segtree_change
     // Changes value of segtree in given position
     // Position must be < segtree_base_size
+    // O(log n)
     #define segtree_change(LSU) FUNC_RESP(segtree_change, LSU)
 #endif
 
@@ -118,6 +118,7 @@ T1 FUNC_IMPL(segtree_query_top)(NAME* tar) {
 
 #ifndef segtree_query_top
     // Returns top value of the tree
+    // O(1)
     #define segtree_query_top(LSU) FUNC_RESP(segtree_query_top, LSU)
 #endif
 
@@ -129,21 +130,22 @@ T1 FUNC_IMPL(segtree_query_range)(NAME* tar, size_t beg, size_t end) {
     end += tar->priv_base_size;
 
     while (beg < end) {
-        if (beg % 2 == 1) {
-            res_l = F2(res_l, tar->priv_memory[beg]);
+        if (beg & 1) {
+            res_l = F1(res_l, tar->priv_memory[beg]);
             beg++;
         }
-        if (end % 2 == 1) {
+        if (end & 1) {
             end--;
-            res_r = F2(tar->priv_memory[end], res_r);
+            res_r = F1(tar->priv_memory[end], res_r);
         }
         beg /= 2; end /= 2;
     }
 
-    return F2(res_l, res_r);
+    return F1(res_l, res_r);
 }
 
 #ifndef segtree_query_range
-    // By comparing values with F2, find answer for range [beg, end]
+    // By comparing values with F1, find answer for range [beg, end)
+    // O(log n)
     #define segtree_query_range(LSU) FUNC_RESP(segtree_query_range, LSU)
 #endif

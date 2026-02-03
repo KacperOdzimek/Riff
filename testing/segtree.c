@@ -8,7 +8,6 @@ int add(int a, int b) {
 #define SU int
 #define T1 int
 #define F1 add
-#define F2 add
 #include "cup/segtree.h"
 
 int main() {
