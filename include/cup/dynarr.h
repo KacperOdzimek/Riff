@@ -50,7 +50,7 @@ int FUNC_IMPL(dynarr_init)(NAME* tar, size_t inital_capacity) {
 #ifndef dynarr_init
     // Inits dynamic array with given capacity
     // May fail, O(1)
-    #define dynarr_init(LSU, tar, inital_capacity) FUNC_RESP(dynarr_init, LSU)(tar, inital_capacity)
+    #define dynarr_init(LSU) FUNC_RESP(dynarr_init, LSU)
 #endif
 
 void FUNC_IMPL(dynarr_destroy)(NAME* tar) {
@@ -64,7 +64,7 @@ void FUNC_IMPL(dynarr_destroy)(NAME* tar) {
 #ifndef dynarr_destroy
     // Properly destroys given dynamic array
     // May fail, O(n) if destructor definied, O(1) otherwise
-    #define dynarr_destroy(LSU, tar) FUNC_RESP(dynarr_destroy, LSU)(tar)
+    #define dynarr_destroy(LSU) FUNC_RESP(dynarr_destroy, LSU)
 #endif
 
 /*
@@ -89,7 +89,7 @@ T1* FUNC_IMPL(dynarr_access)(NAME* arr) {
     // You can change given memory, but must keep object valid, as destructor (if provided)
     // will be called on them sooner or later
     // O(1)
-    #define dynarr_access(LSU, tar) FUNC_RESP(dynarr_access, LSU)(tar)
+    #define dynarr_access(LSU) FUNC_RESP(dynarr_access, LSU)
 #endif
 
 const T1* FUNC_IMPL(dynarr_const_access)(const NAME* arr) {
@@ -100,7 +100,7 @@ const T1* FUNC_IMPL(dynarr_const_access)(const NAME* arr) {
     // Returns pointer to first element of contiguous block of memory, the array
     // Only the first dynarr_size() amount of elements are initialized and valid
     // O(1)
-    #define dynarr_const_access(LSU, tar) FUNC_RESP(dynarr_const_access, LSU)(tar)
+    #define dynarr_const_access(LSU) FUNC_RESP(dynarr_const_access, LSU)
 #endif
 
 /*
@@ -124,7 +124,7 @@ int FUNC_IMPL(dynarr_push)(NAME* arr, T1 value) {
     // This operation push new element into dynamic array
     // May cause reallocation of dynamic array memory - watch out for your pointers
     // May fail, O(1) average
-    #define dynarr_push(LSU, tar, value) FUNC_RESP(dynarr_push, LSU)(tar, value)
+    #define dynarr_push(LSU) FUNC_RESP(dynarr_push, LSU)
 #endif
 
 int FUNC_IMPL(dynarr_pop)(NAME* arr, T1* out) {
@@ -144,7 +144,7 @@ int FUNC_IMPL(dynarr_pop)(NAME* arr, T1* out) {
     // If out is null destructor (if provided) will be called on the poped object
     // Else object will be moved into *out
     // May fail (nothing to pop), O(1)
-    #define dynarr_pop(LSU, tar, out) FUNC_RESP(dynarr_pop, LSU)(tar, out)
+    #define dynarr_pop(LSU) FUNC_RESP(dynarr_pop, LSU)
 #endif
 
 #undef D_CALL
