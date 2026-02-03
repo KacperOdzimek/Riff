@@ -1,0 +1,9 @@
+*
+
+!.gitignore
+
+!include
+!include/**
+
+!testing/
+!testing/**

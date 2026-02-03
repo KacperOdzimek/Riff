@@ -10,7 +10,7 @@
                 "-I/home/kacper/Projects/CUtilitiesPack/include",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/../${fileBasenameNoExtension}"
             ],
             "options": {
                 "cwd": "${fileDirname}"
