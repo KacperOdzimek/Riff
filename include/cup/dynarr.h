@@ -19,7 +19,7 @@ Optional macro params:
 
 #include "generic.h"
 
-#define NAME NAME_MAKE(dynarr_, SU)
+#define NAME NAME_MAKE(dynarr, SU)
 
 #ifdef D1
     #define D_LOOP(beg, end) for (T1* ptr = beg; ptr < end; ptr++) D1(ptr);
@@ -65,7 +65,7 @@ void FUNC_IMPL(dynarr_destroy)(NAME* tar) {
 
 #ifndef dynarr_destroy
     // Properly destroys given dynamic array
-    // May fail, O(n) if destructor definied, O(1) otherwise
+    // O(n) if destructor definied, O(1) otherwise
     #define dynarr_destroy(LSU) FUNC_RESP(dynarr_destroy, LSU)
 #endif
 
@@ -75,8 +75,10 @@ void FUNC_IMPL(dynarr_destroy)(NAME* tar) {
 
 int FUNC_IMPL(dynarr_reserve)(NAME* arr, size_t capacity) {
     if (arr->priv_capc >= capacity) return SCC; // already have
+    
     T1* new_data = R(arr->priv_data, capacity * sizeof(T1));
     if (!new_data) return ERR; // realloc failed
+
     arr->priv_data = new_data;
     arr->priv_capc = capacity;
     return SCC;
@@ -91,7 +93,6 @@ int FUNC_IMPL(dynarr_reserve)(NAME* arr, size_t capacity) {
 int FUNC_IMPL(dynarr_shrink_to_fit)(NAME* arr) {
     size_t new_cap = arr->priv_size;
     if (new_cap == 0) new_cap++; // never cause data to be NULL
-    
     if (arr->priv_capc == new_cap) return SCC; // already shrunk
     
     T1* new_data = R(arr->priv_data, new_cap * sizeof(T1));
@@ -107,6 +108,28 @@ int FUNC_IMPL(dynarr_shrink_to_fit)(NAME* arr) {
     // arrays elements. If already shrunk, no effect.
     // May fail, O(1) else realocation time compelxity
     #define dynarr_shrink_to_fit(LSU) FUNC_RESP(dynarr_shrink_to_fit, LSU)
+#endif
+
+/*
+    Getters
+*/
+
+size_t FUNC_IMPL(dynarr_size)(NAME* arr) {
+    return arr->priv_size;
+}
+
+#ifndef dynarr_size
+    // Returns count of elements in the dynamic array
+    #define dynarr_size(LSU) FUNC_RESP(dynarr_size, LSU)
+#endif
+
+size_t FUNC_IMPL(dynarr_capacity)(NAME* arr) {
+    return arr->priv_capc;
+}
+
+#ifndef dynarr_capacity
+    // Proper way of obtaining count of elements in dynamic array
+    #define dynarr_capacity(LSU) FUNC_RESP(dynarr_capacity, LSU)
 #endif
 
 /*
@@ -178,6 +201,25 @@ int FUNC_IMPL(dynarr_pop)(NAME* arr, T1* out) {
     // Else object will be moved into *out
     // May fail (nothing to pop), O(1)
     #define dynarr_pop(LSU) FUNC_RESP(dynarr_pop, LSU)
+#endif
+
+int FUNC_IMPL(dynarr_pop_many)(NAME* arr, T1* out, size_t amount) {
+    if (arr->priv_size < amount) return ERR; // not enough elements
+
+    size_t pos = arr->priv_size - amount;
+    for (size_t i = 0; i < amount; i++) out[i] = arr->priv_data[i];
+
+    arr->priv_size -= amount;
+    return SCC;
+}
+
+#ifndef dynarr_pop_many
+    // Pops out block of dynamic array elements, not only the last one
+    // Object orders is preserved, eg. if dynamic array is {a, b, c, d}
+    // calling dynarr_pop_many(arr, out, 3) would make array {a} and out {b, c, d}
+    // Obviously out must be large enough array to store the elements
+    // May fail (not enough elements to pop), O(amount)
+    #define dynarr_pop_many(LSU) FUNC_RESP(dynarr_pop_many, LSU)
 #endif
 
 #undef D_CALL

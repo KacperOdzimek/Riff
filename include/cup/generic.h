@@ -5,7 +5,7 @@
 #define CAT(a, b)  CAT2(a, b)
 
 // for making generic struct names
-#define NAME_MAKE(base, suf)      CAT(base, suf)
+#define NAME_MAKE(base, suf)      CAT(CAT(base, _), suf)
 
 // for making type specific functions implementations
 #define FUNC_IMPL(func_name)      CAT(CAT(cup_implementation_of_, func_name), CAT(_for_, SU))
