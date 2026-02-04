@@ -13,10 +13,14 @@ void dest(int* ptr) {
 #include "cup/undef.h"
 
 int main() {
-    list_int* list;
-    list_init(int)(list);
+    list_int list;
+    list_init(int)(&list);
 
     
 
-    list_destroy(int)(list);
+    for (list_node_int* n = list_first(int)(&list); n != NULL; n = list_next(int)(n)) {
+        printf("%d\n", *list_const_access(int)(n));
+    }
+
+    list_destroy(int)(&list);
 }

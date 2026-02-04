@@ -12,7 +12,7 @@ Optional macro params:
 
 /*
     List
-    Double-sided linked list
+    Double-linked list
     O(n) memory complexity
 */
 
@@ -28,9 +28,9 @@ Optional macro params:
 #endif
 
 typedef struct NODE {
-    T1    priv_obj;
-    NODE* priv_prev;
-    NODE* priv_next;
+    T1           priv_obj;
+    struct NODE* priv_prev;
+    struct NODE* priv_next;
 } NODE;
 
 typedef struct NAME {
@@ -75,12 +75,26 @@ void FUNC_IMPL(list_destroy)(NAME* tar) {
     Node Operations
 */
 
-int FUNC_IMPL(list_rim)(NODE* n) {
-    return (n == NULL);
+NODE* FUNC_IMPL(list_first)(NAME* tar) {
+    return tar->priv_first;
 }
 
-#ifndef list_rim
-    #define list_rim(LSU) FUNC_RESP(list_prev, LSU);
+#ifndef list_first 
+    // Returns pointer to the first node in the list
+    // NULL if list is empty
+    // O(1)
+    #define list_first(LSU) FUNC_RESP(list_first, LSU)
+#endif
+
+NODE* FUNC_IMPL(list_last)(NAME* tar) {
+    return tar->priv_last;
+}
+
+#ifndef list_last
+    // Returns pointer to the last node in the list
+    // NULL if list is empty
+    // O(1)
+    #define list_last(LSU) FUNC_RESP(list_last, LSU)
 #endif
 
 NODE* FUNC_IMPL(list_next)(NODE* n) {
@@ -88,6 +102,9 @@ NODE* FUNC_IMPL(list_next)(NODE* n) {
 }
 
 #ifndef list_next
+    // Given pointer to a list's node, returns pointer to the next list's node
+    // Returns NULL if given pointer was last node in the list
+    // O(1)
     #define list_next(LSU) FUNC_RESP(list_next, LSU)
 #endif
 
@@ -96,8 +113,37 @@ NODE* FUNC_IMPL(list_prev)(NODE* n) {
 }
 
 #ifndef list_prev
+    // Given pointer to a list's node, returns pointer to the previous list's node
+    // Returns NULL if given pointer was first node in the list
+    // O(1)
     #define list_prev(LSU) FUNC_RESP(list_prev, LSU)
 #endif
+
+T1* FUNC_IMPL(list_access)(NODE* n) {
+    return &n->priv_obj;
+}
+
+#ifndef list_access
+    // Returns pointer to the object stored inside the given node
+    // Do not invalidate the object, as the destructor (if provided) will be called on it sooner or later
+    // O(1)
+    #define list_access(LSU) FUNC_RESP(list_access, LSU)
+#endif
+
+const T1* FUNC_IMPL(list_const_access)(NODE* n) {
+    return &n->priv_obj;
+}
+
+#ifndef list_const_access
+    // Returns read only pointer to the object stored inside the given node
+    // O(1)
+    #define list_const_access(LSU) FUNC_RESP(list_const_access, LSU)
+#endif
+
+/*
+    Push Operations
+*/
+
 
 #undef D_CALL
 #undef NODE
