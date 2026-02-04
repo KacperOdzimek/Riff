@@ -39,13 +39,13 @@ typedef struct NAME {
     Initialization / Destruction
 */
 
-int FUNC_IMPL(dynarr_init)(NAME* tar, size_t inital_capacity) {
+int FUNC_IMPL(dynarr_init)(NAME* tar, size_t initial_capacity) {
     // do not allow capacity == 0, so we dont have to check on that later
-    if (inital_capacity == 0) inital_capacity = 1;
+    if (initial_capacity == 0) initial_capacity = 1;
     tar->priv_size = 0;
-    tar->priv_data = (T1*)A(inital_capacity * sizeof(T1));
+    tar->priv_data = (T1*)A(initial_capacity * sizeof(T1));
     if (!tar->priv_data) return ERR; // allocation error
-    tar->priv_capc = inital_capacity;
+    tar->priv_capc = initial_capacity;
     return SCC;
 }
 
@@ -76,7 +76,7 @@ void FUNC_IMPL(dynarr_destroy)(NAME* tar) {
 int FUNC_IMPL(dynarr_reserve)(NAME* arr, size_t capacity) {
     if (arr->priv_capc >= capacity) return SCC; // already have
     
-    T1* new_data = R(arr->priv_data, capacity * sizeof(T1));
+    T1* new_data = (T1*)R(arr->priv_data, capacity * sizeof(T1));
     if (!new_data) return ERR; // realloc failed
 
     arr->priv_data = new_data;
@@ -167,7 +167,7 @@ const T1* FUNC_IMPL(dynarr_const_access)(const NAME* arr) {
 int FUNC_IMPL(dynarr_push)(NAME* arr, T1 value) {
     if (arr->priv_size >= arr->priv_capc) {
         size_t new_cap = arr->priv_capc * 2;
-        void* new_data = R(arr->priv_data, new_cap * sizeof(T1));
+        void* new_data = (T1*)R(arr->priv_data, new_cap * sizeof(T1));
         if (!new_data) return ERR; // allocation failed
         arr->priv_capc = new_cap;
         arr->priv_data = new_data;
@@ -206,20 +206,36 @@ int FUNC_IMPL(dynarr_pop)(NAME* arr, T1* out) {
 int FUNC_IMPL(dynarr_pop_many)(NAME* arr, T1* out, size_t amount) {
     if (arr->priv_size < amount) return ERR; // not enough elements
 
-    size_t pos = arr->priv_size - amount;
-    for (size_t i = 0; i < amount; i++) out[i] = arr->priv_data[i];
+    size_t first = arr->priv_size - amount;
 
-    arr->priv_size -= amount;
+    if (out) for (size_t i = 0; i < amount; i++) out[i] = arr->priv_data[first + i];
+    else  D_LOOP(arr->priv_data + first, arr->priv_data + arr->priv_size);
+
+    arr->priv_size = first;
     return SCC;
 }
 
 #ifndef dynarr_pop_many
     // Pops out block of dynamic array elements, not only the last one
+    // If out == NULL destructor is called on objects
+    // Otherwise objects are copied into *out as described:
     // Object orders is preserved, eg. if dynamic array is {a, b, c, d}
     // calling dynarr_pop_many(arr, out, 3) would make array {a} and out {b, c, d}
     // Obviously out must be large enough array to store the elements
     // May fail (not enough elements to pop), O(amount)
     #define dynarr_pop_many(LSU) FUNC_RESP(dynarr_pop_many, LSU)
+#endif
+
+void FUNC_IMPL(dynarr_clear)(NAME* arr) {
+    D_LOOP(arr->priv_data, arr->priv_data + arr->priv_size);
+    arr->priv_size = 0;
+}
+
+#ifndef dynarr_clear
+    // Clear array, erases contained elements with destructor if provided, 
+    // but does not reduce it capacity - combine with dynarr_shrink_to_fit() 
+    // call afterwards to reduce array memory block
+    #define dynarr_clear(LSU) FUNC_RESP(dynarr_clear, LSU)
 #endif
 
 #undef D_CALL
