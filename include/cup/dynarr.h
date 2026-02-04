@@ -14,7 +14,7 @@ Optional macro params:
     Dynamic Array
     Data structure, dynamically resizing, 
     when it's size is to small to perform a push call
-    O(n) ~ O(2n) memory complexity
+    O(n) memory complexity
 */
 
 #include "generic.h"
