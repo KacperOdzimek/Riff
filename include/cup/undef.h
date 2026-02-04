@@ -38,14 +38,3 @@
 #undef F7
 #undef F8
 #undef F9
-
-// undef functions
-#undef S1
-#undef S2
-#undef S3
-#undef S4
-#undef S5
-#undef S6
-#undef S7
-#undef S8
-#undef S9

@@ -60,6 +60,7 @@ int FUNC_IMPL(segtree_init)(NAME* tar, size_t range_size, T1 default_val) {
 void FUNC_IMPL(segtree_destroy)(NAME* tar) {
     F(tar->priv_memory);
     tar->priv_base_size = 0;
+    tar->priv_memory = NULL;
 }
 
 #ifndef segtree_destroy
@@ -80,7 +81,7 @@ size_t FUNC_IMPL(segtree_base_size)(NAME* tar) {
     // Returns base size of the segment tree
     // All operations and quary calls must have indicies < this
     // O(1)
-    #define segtree_base_size(LSU) FUNC_RESP(segtree_base_size, LSU);
+    #define segtree_base_size(LSU) FUNC_RESP(segtree_base_size, LSU)
 #endif
 
 /*
