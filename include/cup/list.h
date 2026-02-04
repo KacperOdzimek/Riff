@@ -24,7 +24,7 @@ Optional macro params:
 #ifdef D1
     #define D_CALL(ptr) D1(ptr)
 #else
-    #define D_CALL
+    #define D_CALL(ptr) ((void)0)
 #endif
 
 typedef struct NODE {
@@ -59,7 +59,7 @@ void FUNC_IMPL(list_destroy)(NAME* tar) {
         NODE* next = cur->priv_next;
         D_CALL(&cur->priv_obj); // destroy object
         F(cur); // free node
-        cur = next; 
+        cur = next;
     }
 
     tar->priv_size  = 0;
@@ -72,10 +72,24 @@ void FUNC_IMPL(list_destroy)(NAME* tar) {
 #endif
 
 /*
+    Getters
+*/
+
+size_t FUNC_IMPL(list_size)(const NAME* tar) {
+    return tar->priv_size;
+}
+
+#ifndef list_size
+    // Returns list size
+    // O(1)
+    #define list_size(LSU) FUNC_RESP(list_size, LSU)
+#endif
+
+/*
     Node Operations
 */
 
-NODE* FUNC_IMPL(list_first)(NAME* tar) {
+NODE* FUNC_IMPL(list_first)(const NAME* tar) {
     return tar->priv_first;
 }
 
@@ -86,7 +100,7 @@ NODE* FUNC_IMPL(list_first)(NAME* tar) {
     #define list_first(LSU) FUNC_RESP(list_first, LSU)
 #endif
 
-NODE* FUNC_IMPL(list_last)(NAME* tar) {
+NODE* FUNC_IMPL(list_last)(const NAME* tar) {
     return tar->priv_last;
 }
 
@@ -98,23 +112,25 @@ NODE* FUNC_IMPL(list_last)(NAME* tar) {
 #endif
 
 NODE* FUNC_IMPL(list_next)(NODE* n) {
-    return n->priv_next;
+    return n ? n->priv_next : NULL;
 }
 
 #ifndef list_next
     // Given pointer to a list's node, returns pointer to the next list's node
     // Returns NULL if given pointer was last node in the list
+    // Returns NULL if passed NULL
     // O(1)
     #define list_next(LSU) FUNC_RESP(list_next, LSU)
 #endif
 
 NODE* FUNC_IMPL(list_prev)(NODE* n) {
-    return n->priv_prev;
+    return n ? n->priv_prev : NULL;
 }
 
 #ifndef list_prev
     // Given pointer to a list's node, returns pointer to the previous list's node
     // Returns NULL if given pointer was first node in the list
+    // Returns NULL if passed NULL
     // O(1)
     #define list_prev(LSU) FUNC_RESP(list_prev, LSU)
 #endif
@@ -141,9 +157,120 @@ const T1* FUNC_IMPL(list_const_access)(NODE* n) {
 #endif
 
 /*
-    Push Operations
+    Operations
 */
 
+NODE* FUNC_IMPL(list_push_before)(NAME* tar, NODE* before, T1 value) {
+    NODE* new_node = (NODE*)A(sizeof(NODE));
+    if (!new_node) return NULL;
+
+    new_node->priv_obj = value;
+
+    // Insert at end if before == NULL
+    if (before == NULL) {
+        new_node->priv_prev = tar->priv_last;
+        new_node->priv_next = NULL;
+
+        if (tar->priv_last) tar->priv_last->priv_next = new_node;
+        else                tar->priv_first = new_node;
+
+        tar->priv_last = new_node;
+    }
+    else {
+        // Insert before given node
+        new_node->priv_prev = before->priv_prev;
+        new_node->priv_next = before;
+
+        if (before->priv_prev) before->priv_prev->priv_next = new_node;
+        else                   tar->priv_first = new_node;
+
+        before->priv_prev = new_node;
+    }
+
+    tar->priv_size++;
+    return new_node;
+}
+
+#ifndef list_push_before
+    // Inserts new node with given value before the "before" node
+    // If "before" node is NULL new node will be now the last one 
+    // (it gets pushed before exclusive list end)
+    // May fail allocation, returns NULL on fail, valid pointer otherwise, O(1)
+    #define list_push_before(LSU) FUNC_RESP(list_push_before, LSU)
+#endif
+
+NODE* FUNC_IMPL(list_push_after)(NAME* tar, NODE* after, T1 value) {
+    NODE* new_node = (NODE*)A(sizeof(NODE));
+    if (!new_node) return NULL;
+
+    new_node->priv_obj = value;
+
+    // Insert at begin if after == NULL
+    if (after == NULL) {
+        new_node->priv_prev = NULL;
+        new_node->priv_next = tar->priv_first;
+
+        if (tar->priv_first) tar->priv_first->priv_prev = new_node;
+        else                 tar->priv_last = new_node; // list was empty
+
+        tar->priv_first = new_node;
+    }
+    else {
+        // Insert after given node
+        new_node->priv_prev = after;
+        new_node->priv_next = after->priv_next;
+
+        if (after->priv_next) after->priv_next->priv_prev = new_node;
+        else                  tar->priv_last = new_node;  // inserting after last node
+
+        after->priv_next = new_node;
+    }
+
+    tar->priv_size++;
+    return new_node;
+}
+
+#ifndef list_push_after
+    // Inserts new node with given value after the "after" node
+    // If "after" node is NULL new node will be now the first one
+    // (it gets pushed after exclusive list begin)
+    // May fail allocation, returns NULL on fail, valid pointer otherwise, O(1)
+    #define list_push_after(LSU) FUNC_RESP(list_push_after, LSU)
+#endif
+
+void FUNC_IMPL(list_pop)(NAME* tar, NODE* n, T1* out) {
+    // get rid of object
+    if (out) *out = n->priv_obj;
+    else D_CALL(&n->priv_obj);
+
+    // Relink previous node
+    if (n->priv_prev) n->priv_prev->priv_next = n->priv_next;
+    else              tar->priv_first = n->priv_next; // n was first node
+    
+    // Relink next node
+    if (n->priv_next) n->priv_next->priv_prev = n->priv_prev;
+    else              tar->priv_last = n->priv_prev; // n was last node
+
+    // Decrease size and free
+    tar->priv_size--;
+    F(n);
+}
+
+#ifndef list_pop
+    // Erases given element from the list
+    // If out == NULL destructor will be called on contained object
+    // Otherwise *out = element, and destructor will not be called
+    // O(1)
+    #define list_pop(LSU) FUNC_RESP(list_pop, LSU)
+#endif
+
+void FUNC_IMPL(list_clear)(NAME* tar) {
+    list_destroy(SU)(tar); // apparently the same
+}
+
+#ifndef list_clear
+    #define list_clear(LSU) FUNC_RESP(list_clear, LSU)
+#endif
 
 #undef D_CALL
 #undef NODE

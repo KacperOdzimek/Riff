@@ -25,8 +25,8 @@ Optional macro params:
     #define D_LOOP(beg, end) for (T1* ptr = beg; ptr < end; ptr++) D1(ptr);
     #define D_CALL(ptr) D1(ptr)
 #else
-    #define D_LOOP
-    #define D_CALL
+    #define D_LOOP(beg, end) ((void)0)
+    #define D_CALL(ptr) ((void)0)
 #endif
 
 typedef struct NAME {
