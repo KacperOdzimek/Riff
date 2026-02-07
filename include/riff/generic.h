@@ -8,10 +8,10 @@
 #define NAME_MAKE(base, suf)      CAT(CAT(base, _), suf)
 
 // for making dispatch macros
-#define FUNC_IMPL(func_name, SUF) CAT(CAT(cup_implementation_of_, func_name), CAT(_for_, SUF))
+#define FUNC_IMPL(func_name, SUF) CAT(CAT(riff_implementation_of_, func_name), CAT(_for_, SUF))
 
 // for making internal functions
-#define FUNC_INTR(func_name, SUF) CAT(CAT(cup_internal_func_, func_name), CAT(_for_, SUF))
+#define FUNC_INTR(func_name, SUF) CAT(CAT(riff_internal_func_, func_name), CAT(_for_, SUF))
 
 // success flag
 #define SCC 1
