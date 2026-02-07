@@ -17,41 +17,37 @@ Optional macro params:
 
 /*
     Hash Map
-
 */
 
 #include "generic.h"
 
 #define NAME NAME_MAKE(hashmap, SU)
 
-// todo
 #ifdef D1
-    #define D_CALL(ptr) D1(ptr)
+    #define KEY_D_CALL(ptr) D1(ptr)
 #else
-    #define D_CALL(beg, end) ((void)0)
+    #define KEY_D_CALL(ptr) ((void)0)
+#endif
+
+#ifdef D2
+    #define VAL_D_CALL(ptr) D2(ptr)
+#else
+    #define VAL_D_CALL(ptr) ((void)0)
 #endif
 
 typedef struct NAME {
-    char*   priv_used;
-    size_t* priv_hashes;
-    T1*     priv_keys;
-    T2*     priv_values;
+
 
     size_t  priv_size;  // actual count of items within
     size_t  priv_capc;  // size of arrays
 } NAME;
-
-// priv_size / priv_caps < 0.75
-// priv_size     < 0.75 * priv_caps
-// priv_size * 4 <    3 * priv_caps
 
 /*
     Initialization / Destruction
 */
 
 int FUNC_IMPL(hashmap_init)(NAME* tar) {
-    
-    return SCC;
+
 }
 
 #ifndef hashmap_init
@@ -86,11 +82,7 @@ int FUNC_IMPL(hashmap_rehash)(NAME* tar) {
 */
 
 int FUNC_IMPL(hashmap_find)(NAME* tar, const T1* user_key, const T1** key, T2** value) {
-    size_t h = (F1(user_key) % tar->priv_capc);
-    
-    for (size_t i = h; i < tar->priv_capc; i++) {
-        
-    }
+
 }
 
 #ifndef hashmap_find
@@ -119,5 +111,6 @@ int FUNC_IMPL(hashmap_push)(NAME* tar, T1 key, T2 value) {
 #endif
 
 
-// to add dcalls
+#undef KEY_D_CALL
+#undef VAL_D_CALL
 #undef NAME

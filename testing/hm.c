@@ -7,8 +7,8 @@ int equal(int a, int b) {return a == b; };
 #define SU int_int
 #define T1 int
 #define T2 int
-#define hash
-#define equal
+#define F1 hash
+#define F2 equal
 #include "cup/hashmap.h"
 
 int main() {
