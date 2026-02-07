@@ -1,0 +1,11 @@
+*
+
+!.gitignore
+
+!include
+!include/**
+
+!testing/
+!testing/**
+
+!Readme.md
