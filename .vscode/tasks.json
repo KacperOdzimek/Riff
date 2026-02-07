@@ -8,7 +8,6 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 //"-fsanitize=address,undefined",
-                "-O1",
                 "-I/home/kacper/Projects/CUtilitiesPack/include",
                 "${file}",
                 "-o",

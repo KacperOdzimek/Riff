@@ -13,6 +13,9 @@
 // for making dispatch macros
 #define FUNC_RESP(func_name, LSU) CAT(CAT(cup_implementation_of_, func_name), CAT(_for_, LSU))
 
+// for making internal functions
+#define FUNC_INTR(func_name, LSU) CAT(CAT(cup_internal_func_, func_name), CAT(_for_, LSU))
+
 #define SCC 1
 #define ERR 0
 
