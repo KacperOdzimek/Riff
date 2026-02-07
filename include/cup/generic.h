@@ -13,10 +13,15 @@
 // for making internal functions
 #define FUNC_INTR(func_name, SUF) CAT(CAT(cup_internal_func_, func_name), CAT(_for_, SUF))
 
+// success flag
 #define SCC 1
+
+// error flag
 #define ERR 0
 
 #endif // GENERIC_H
+
+// do on every include:
 
 // default allocator
 #ifndef A

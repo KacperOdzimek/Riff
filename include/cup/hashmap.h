@@ -249,6 +249,22 @@ int FUNC_IMPL(hashmap_push, SU)(NAME* tar, T1 key, T2 value) {
     #define hashmap_push(LSU) FUNC_IMPL(hashmap_push, LSU)
 #endif
 
+void FUNC_IMPL(hashmap_clear, SU)(NAME* tar) {
+    for (size_t i = 0; i < tar->priv_capc; i++) {
+        if (tar->priv_used[i]) {
+            KEY_D_CALL(&tar->priv_keys[i]);
+            VAL_D_CALL(&tar->priv_values[i]);
+        }
+        tar->priv_used[i] = HASH_NONE; // can do this
+    }
+}
+
+#ifndef hashmap_clear
+    // Clears map
+    // O(n)
+    #define hashmap_clear(LSU) FUNC_IMPL(hashmap_clear, LSU)
+#endif
+
 #undef HASH_NONE
 #undef HASH_FULL
 #undef HASH_TOMB
