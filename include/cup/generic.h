@@ -7,14 +7,11 @@
 // for making generic struct names
 #define NAME_MAKE(base, suf)      CAT(CAT(base, _), suf)
 
-// for making type specific functions implementations
-#define FUNC_IMPL(func_name)      CAT(CAT(cup_implementation_of_, func_name), CAT(_for_, SU))
-
 // for making dispatch macros
-#define FUNC_RESP(func_name, LSU) CAT(CAT(cup_implementation_of_, func_name), CAT(_for_, LSU))
+#define FUNC_IMPL(func_name, SUF) CAT(CAT(cup_implementation_of_, func_name), CAT(_for_, SUF))
 
 // for making internal functions
-#define FUNC_INTR(func_name, LSU) CAT(CAT(cup_internal_func_, func_name), CAT(_for_, LSU))
+#define FUNC_INTR(func_name, SUF) CAT(CAT(cup_internal_func_, func_name), CAT(_for_, SUF))
 
 #define SCC 1
 #define ERR 0

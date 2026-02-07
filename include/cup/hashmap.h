@@ -69,17 +69,17 @@ int FUNC_INTR(hashmap_init, SU)(NAME* tar, size_t cap) {
     return SCC;
 }
 
-int FUNC_IMPL(hashmap_init)(NAME *tar) {
+int FUNC_IMPL(hashmap_init, SU)(NAME *tar) {
     return FUNC_INTR(hashmap_init, SU)(tar, 16);
 }
 
 #ifndef hashmap_init
     // Inits hashmap structure
     // May fail
-    #define hashmap_init(LSU) FUNC_RESP(hashmap_init, LSU)
+    #define hashmap_init(LSU) FUNC_IMPL(hashmap_init, LSU)
 #endif
 
-void FUNC_IMPL(hashmap_destroy)(NAME *tar) {
+void FUNC_IMPL(hashmap_destroy, SU)(NAME *tar) {
     for (size_t i = 0; i < tar->priv_capc; i++) {
         if (tar->priv_used[i]) {
             KEY_D_CALL(&tar->priv_keys[i]);
@@ -101,16 +101,16 @@ void FUNC_IMPL(hashmap_destroy)(NAME *tar) {
 #ifndef hashmap_destroy
     // Frees hashmap and its keys and values
     // O(n)
-    #define hashmap_destroy(LSU) FUNC_RESP(hashmap_destroy, LSU)
+    #define hashmap_destroy(LSU) FUNC_IMPL(hashmap_destroy, LSU)
 #endif
 
 /*
     Memory
 */
 
-int FUNC_IMPL(hashmap_push)(NAME *tar, T1 key, T2 value); // forward
+int FUNC_IMPL(hashmap_push, SU)(NAME *tar, T1 key, T2 value); // forward
 
-int FUNC_IMPL(hashmap_rehash)(NAME *tar, size_t new_capacity) {
+int FUNC_IMPL(hashmap_rehash, SU)(NAME *tar, size_t new_capacity) {
     // alloc new map
     if (new_capacity < tar->priv_size) return ERR;
     NAME new_map; if (FUNC_INTR(hashmap_init, SU)(&new_map, new_capacity) == ERR) return ERR;
@@ -118,11 +118,11 @@ int FUNC_IMPL(hashmap_rehash)(NAME *tar, size_t new_capacity) {
     // reinsert items into new map
     for (size_t i = 0; i < tar->priv_capc; ++i) {
         if (tar->priv_used[i] != HASH_FULL) continue;
-        int scc = FUNC_IMPL(hashmap_push)(&new_map, tar->priv_keys[i], tar->priv_values[i]);
+        int scc = FUNC_IMPL(hashmap_push, SU)(&new_map, tar->priv_keys[i], tar->priv_values[i]);
         
         // if failed to insert, destroy partialy created nao
         if (scc != SCC) {
-            FUNC_IMPL(hashmap_destroy)(&new_map);
+            FUNC_IMPL(hashmap_destroy, SU)(&new_map);
             return ERR;
         }
     }
@@ -141,14 +141,14 @@ int FUNC_IMPL(hashmap_rehash)(NAME *tar, size_t new_capacity) {
 #ifndef hashmap_rehash
     // Rebuild iternal arrays inside hashmap
     // May fail (new_capacity to small to fit, or allocation failure), O(n)
-    #define hashmap_rehash(LSU) FUNC_RESP(hashmap_rehash, LSU)
+    #define hashmap_rehash(LSU) FUNC_IMPL(hashmap_rehash, LSU)
 #endif
 
 /*
     Operations
 */
 
-int FUNC_IMPL(hashmap_find)(NAME* tar, T1 user_key, const T1** inner_key, T2** value) {
+int FUNC_IMPL(hashmap_find, SU)(NAME* tar, T1 user_key, const T1** inner_key, T2** value) {
     size_t idx = F1(&user_key) % tar->priv_capc;
 
     for (size_t i = 0; i < tar->priv_capc; ++i) {
@@ -176,10 +176,10 @@ int FUNC_IMPL(hashmap_find)(NAME* tar, T1 user_key, const T1** inner_key, T2** v
     // Note changing the hasmap may lead to invalidation of returned values!
     // *key and *value may be NULL
     // May fail (if no given key), O(1) avg O(n) worst
-    #define hashmap_find(LSU) FUNC_RESP(hashmap_find, LSU)
+    #define hashmap_find(LSU) FUNC_IMPL(hashmap_find, LSU)
 #endif
 
-void FUNC_IMPL(hashmap_pop)(NAME* tar, const T1* INNER_key, T2* out) {
+void FUNC_IMPL(hashmap_pop, SU)(NAME* tar, const T1* INNER_key, T2* out) {
     size_t pos = INNER_key - tar->priv_keys;
 
     if (out)  *out = tar->priv_values[pos];
@@ -199,14 +199,14 @@ void FUNC_IMPL(hashmap_pop)(NAME* tar, const T1* INNER_key, T2* out) {
     //
     // if out is NULL, stored value will be destructed (if destructor provided)
     // otherwise it will be moved into *out
-    #define hashmap_pop(LSU) FUNC_RESP(hashmap_pop, LSU)
+    #define hashmap_pop(LSU) FUNC_IMPL(hashmap_pop, LSU)
 #endif
 
-int FUNC_IMPL(hashmap_push)(NAME* tar, T1 key, T2 value) {
+int FUNC_IMPL(hashmap_push, SU)(NAME* tar, T1 key, T2 value) {
     // Double memory if load factor exceeds 0.7
     if ((tar->priv_size + 1) * 10 > tar->priv_capc * 7) {
         // grow, if grow fails try to fit anyway - there still may be some free spots in the array
-        FUNC_IMPL(hashmap_rehash)(tar, tar->priv_capc * 2);
+        FUNC_IMPL(hashmap_rehash, SU)(tar, tar->priv_capc * 2);
     }
 
     size_t idx  = F1(&key) % tar->priv_capc;
@@ -246,7 +246,7 @@ int FUNC_IMPL(hashmap_push)(NAME* tar, T1 key, T2 value) {
     // Inserts new or replace value at given key
     // Given key and value are now managed my map and provided deconstructors
     // May fail (if failed to resize), O(1) avg O(n) worst
-    #define hashmap_push(LSU) FUNC_RESP(hashmap_push, LSU)
+    #define hashmap_push(LSU) FUNC_IMPL(hashmap_push, LSU)
 #endif
 
 #undef HASH_NONE

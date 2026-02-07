@@ -35,7 +35,7 @@ typedef struct NAME {
     Initialization / Destruction
 */
 
-int FUNC_IMPL(segtree_init)(NAME* tar, size_t range_size, T1 default_val) {
+int FUNC_IMPL(segtree_init, SU)(NAME* tar, size_t range_size, T1 default_val) {
     size_t base = 1;
     while (base < range_size) base *= 2;
 
@@ -54,10 +54,10 @@ int FUNC_IMPL(segtree_init)(NAME* tar, size_t range_size, T1 default_val) {
 #ifndef segtree_init
     // Inits segtree of given size
     // O(n)
-    #define segtree_init(LSU) FUNC_RESP(segtree_init, LSU)
+    #define segtree_init(LSU) FUNC_IMPL(segtree_init, LSU)
 #endif
 
-void FUNC_IMPL(segtree_destroy)(NAME* tar) {
+void FUNC_IMPL(segtree_destroy, SU)(NAME* tar) {
     F(tar->priv_memory);
     tar->priv_base_size = 0;
     tar->priv_memory = NULL;
@@ -66,14 +66,14 @@ void FUNC_IMPL(segtree_destroy)(NAME* tar) {
 #ifndef segtree_destroy
     // Properly destroys given segtree
     // O(1)
-    #define segtree_destroy(LSU) FUNC_RESP(segtree_destroy, LSU)
+    #define segtree_destroy(LSU) FUNC_IMPL(segtree_destroy, LSU)
 #endif
 
 /*
     Getters
 */
 
-size_t FUNC_IMPL(segtree_base_size)(NAME* tar) {
+size_t FUNC_IMPL(segtree_base_size, SU)(NAME* tar) {
     return tar->priv_base_size;
 }
 
@@ -81,14 +81,14 @@ size_t FUNC_IMPL(segtree_base_size)(NAME* tar) {
     // Returns base size of the segment tree
     // All operations and quary calls must have indicies < this
     // O(1)
-    #define segtree_base_size(LSU) FUNC_RESP(segtree_base_size, LSU)
+    #define segtree_base_size(LSU) FUNC_IMPL(segtree_base_size, LSU)
 #endif
 
 /*
     Operations
 */
 
-void FUNC_IMPL(segtree_change)(NAME* tar, size_t pos, T1 val) {
+void FUNC_IMPL(segtree_change, SU)(NAME* tar, size_t pos, T1 val) {
     pos += tar->priv_base_size;
     tar->priv_memory[pos] = val;
     pos /= 2;
@@ -106,24 +106,24 @@ void FUNC_IMPL(segtree_change)(NAME* tar, size_t pos, T1 val) {
     // Changes value of segtree in given position
     // Position must be < segtree_base_size
     // O(log n)
-    #define segtree_change(LSU) FUNC_RESP(segtree_change, LSU)
+    #define segtree_change(LSU) FUNC_IMPL(segtree_change, LSU)
 #endif
 
 /*
     Queries
 */
 
-T1 FUNC_IMPL(segtree_query_top)(NAME* tar) {
+T1 FUNC_IMPL(segtree_query_top, SU)(NAME* tar) {
     return tar->priv_memory[1];
 }
 
 #ifndef segtree_query_top
     // Returns top value of the tree
     // O(1)
-    #define segtree_query_top(LSU) FUNC_RESP(segtree_query_top, LSU)
+    #define segtree_query_top(LSU) FUNC_IMPL(segtree_query_top, LSU)
 #endif
 
-T1 FUNC_IMPL(segtree_query_range)(NAME* tar, size_t beg, size_t end) {
+T1 FUNC_IMPL(segtree_query_range, SU)(NAME* tar, size_t beg, size_t end) {
     T1 res_l = tar->priv_default_val;
     T1 res_r = tar->priv_default_val;
 
@@ -148,5 +148,7 @@ T1 FUNC_IMPL(segtree_query_range)(NAME* tar, size_t beg, size_t end) {
 #ifndef segtree_query_range
     // By comparing values with F1, find answer for range [beg, end)
     // O(log n)
-    #define segtree_query_range(LSU) FUNC_RESP(segtree_query_range, LSU)
+    #define segtree_query_range(LSU) FUNC_IMPL(segtree_query_range, LSU)
 #endif
+
+#undef NAME 
