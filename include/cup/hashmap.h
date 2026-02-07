@@ -74,7 +74,8 @@ int FUNC_IMPL(hashmap_init)(NAME *tar) {
 }
 
 #ifndef hashmap_init
-    // todo
+    // Inits hashmap structure
+    // May fail
     #define hashmap_init(LSU) FUNC_RESP(hashmap_init, LSU)
 #endif
 
@@ -98,7 +99,8 @@ void FUNC_IMPL(hashmap_destroy)(NAME *tar) {
 }
 
 #ifndef hashmap_destroy
-    // todo
+    // Frees hashmap and its keys and values
+    // O(n)
     #define hashmap_destroy(LSU) FUNC_RESP(hashmap_destroy, LSU)
 #endif
 
