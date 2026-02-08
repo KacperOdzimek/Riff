@@ -17,6 +17,9 @@ Optional macro params:
 
 /*
     Hash Map
+    Hash map implementation with linear probing.
+    Allow for avg. O(1) access to elements by it's keys.
+    O(n) memory complexity
 */
 
 #include "generic.h"
@@ -24,15 +27,15 @@ Optional macro params:
 #define NAME NAME_MAKE(hashmap, SU)
 
 #ifdef D1
-#define KEY_D_CALL(ptr) D1(ptr)
+    #define KEY_D_CALL(ptr) D1(ptr)
 #else
-#define KEY_D_CALL(ptr) ((void)0)
+    #define KEY_D_CALL(ptr) ((void)0)
 #endif
 
 #ifdef D2
-#define VAL_D_CALL(ptr) D2(ptr)
+    #define VAL_D_CALL(ptr) D2(ptr)
 #else
-#define VAL_D_CALL(ptr) ((void)0)
+    #define VAL_D_CALL(ptr) ((void)0)
 #endif
 
 #define HASH_NONE 0
@@ -81,7 +84,7 @@ int FUNC_IMPL(hashmap_init, SU)(NAME *tar) {
 
 void FUNC_IMPL(hashmap_destroy, SU)(NAME *tar) {
     for (size_t i = 0; i < tar->priv_capc; i++) {
-        if (tar->priv_used[i]) {
+        if (tar->priv_used[i] == HASH_FULL) {
             KEY_D_CALL(&tar->priv_keys[i]);
             VAL_D_CALL(&tar->priv_values[i]);
         }
