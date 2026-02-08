@@ -17,6 +17,9 @@ Optional macro params:
 
 /*
     Hash Map
+    Hash map implementation with linear probing.
+    Allow for avg. O(1) access to elements by it's keys.
+    O(n) memory complexity
 */
 
 #include "generic.h"
