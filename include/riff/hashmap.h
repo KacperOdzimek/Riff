@@ -27,15 +27,15 @@ Optional macro params:
 #define NAME NAME_MAKE(hashmap, SU)
 
 #ifdef D1
-#define KEY_D_CALL(ptr) D1(ptr)
+    #define KEY_D_CALL(ptr) D1(ptr)
 #else
-#define KEY_D_CALL(ptr) ((void)0)
+    #define KEY_D_CALL(ptr) ((void)0)
 #endif
 
 #ifdef D2
-#define VAL_D_CALL(ptr) D2(ptr)
+    #define VAL_D_CALL(ptr) D2(ptr)
 #else
-#define VAL_D_CALL(ptr) ((void)0)
+    #define VAL_D_CALL(ptr) ((void)0)
 #endif
 
 #define HASH_NONE 0
