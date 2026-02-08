@@ -84,7 +84,7 @@ int FUNC_IMPL(hashmap_init, SU)(NAME *tar) {
 
 void FUNC_IMPL(hashmap_destroy, SU)(NAME *tar) {
     for (size_t i = 0; i < tar->priv_capc; i++) {
-        if (tar->priv_used[i]) {
+        if (tar->priv_used[i] == HASH_FULL) {
             KEY_D_CALL(&tar->priv_keys[i]);
             VAL_D_CALL(&tar->priv_values[i]);
         }
