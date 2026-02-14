@@ -18,8 +18,29 @@ Optional macro params:
 
 #include "generic.h"
 
-#define NAME NAME_MAKE(list, SU)
-#define NODE NAME_MAKE(list_node, SU)
+#ifndef list_node
+    #define list_node(LSU) NAME(list_node, LSU)
+#endif
+
+#ifndef list
+    #define list(LSU) NAME(list, LSU)
+#endif
+
+typedef struct list_node(SU) {
+    T1                    priv_obj;
+    struct list_node(SU)* priv_prev;
+    struct list_node(SU)* priv_next;
+} list_node(SU);
+
+typedef struct list(SU) {
+    size_t          priv_size;
+    list_node(SU)*  priv_first;
+    list_node(SU)*  priv_last;
+} list(SU);
+
+/*
+    Helpers
+*/
 
 #ifdef D1
     #define D_CALL(ptr) D1(ptr)
@@ -27,69 +48,58 @@ Optional macro params:
     #define D_CALL(ptr) ((void)0)
 #endif
 
-typedef struct NODE {
-    T1           priv_obj;
-    struct NODE* priv_prev;
-    struct NODE* priv_next;
-} NODE;
-
-typedef struct NAME {
-    size_t priv_size;
-    NODE*  priv_first;
-    NODE*  priv_last;
-} NAME;
-
 /*
-    Initialization / Destruction
+    Zero / Destruction
 */
 
-void FUNC_IMPL(list_init, SU)(NAME* tar) {
+void IMPL(list_zero, SU)(list(SU)* tar) {
     tar->priv_size  = 0;
     tar->priv_first = NULL;
     tar->priv_last  = NULL;
 }
 
-#ifndef list_init
-    #define list_init(LSU) FUNC_IMPL(list_init, LSU)
+#ifndef list_zero
+    // Makes unitialized memory proper 0-initialized empty list
+    // Does not free anything
+    #define list_zero(LSU) IMPL(list_zero, LSU)
 #endif
 
-void FUNC_IMPL(list_destroy, SU)(NAME* tar) {
-    NODE* cur = tar->priv_first;
+void IMPL(list_destroy, SU)(list(SU)* tar) {
+    list_node(SU)* cur = tar->priv_first;
     while (cur) {
-        NODE* next = cur->priv_next;
+        list_node(SU)* next = cur->priv_next;
         D_CALL(&cur->priv_obj); // destroy object
         F(cur); // free node
         cur = next;
     }
 
-    tar->priv_size  = 0;
-    tar->priv_first = NULL;
-    tar->priv_last  = NULL;
+    list_zero(SU)(tar);
 }
 
 #ifndef list_destroy
-    #define list_destroy(LSU) FUNC_IMPL(list_destroy, LSU)
+    // Free allocated memory, destroys owned objects
+    #define list_destroy(LSU) IMPL(list_destroy, LSU)
 #endif
 
 /*
     Getters
 */
 
-size_t FUNC_IMPL(list_size, SU)(const NAME* tar) {
+size_t IMPL(list_size, SU)(const list(SU)* tar) {
     return tar->priv_size;
 }
 
 #ifndef list_size
     // Returns list size
     // O(1)
-    #define list_size(LSU) FUNC_IMPL(list_size, LSU)
+    #define list_size(LSU) IMPL(list_size, LSU)
 #endif
 
 /*
     Node Operations
 */
 
-NODE* FUNC_IMPL(list_first, SU)(const NAME* tar) {
+list_node(SU)* IMPL(list_first, SU)(const list(SU)* tar) {
     return tar->priv_first;
 }
 
@@ -97,10 +107,10 @@ NODE* FUNC_IMPL(list_first, SU)(const NAME* tar) {
     // Returns pointer to the first node in the list
     // NULL if list is empty
     // O(1)
-    #define list_first(LSU) FUNC_IMPL(list_first, LSU)
+    #define list_first(LSU) IMPL(list_first, LSU)
 #endif
 
-NODE* FUNC_IMPL(list_last, SU)(const NAME* tar) {
+list_node(SU)* IMPL(list_last, SU)(const list(SU)* tar) {
     return tar->priv_last;
 }
 
@@ -108,10 +118,10 @@ NODE* FUNC_IMPL(list_last, SU)(const NAME* tar) {
     // Returns pointer to the last node in the list
     // NULL if list is empty
     // O(1)
-    #define list_last(LSU) FUNC_IMPL(list_last, LSU)
+    #define list_last(LSU) IMPL(list_last, LSU)
 #endif
 
-NODE* FUNC_IMPL(list_next, SU)(NODE* n) {
+list_node(SU)* IMPL(list_next, SU)(list_node(SU)* n) {
     return n ? n->priv_next : NULL;
 }
 
@@ -120,10 +130,10 @@ NODE* FUNC_IMPL(list_next, SU)(NODE* n) {
     // Returns NULL if given pointer was last node in the list
     // Returns NULL if passed NULL
     // O(1)
-    #define list_next(LSU) FUNC_IMPL(list_next, LSU)
+    #define list_next(LSU) IMPL(list_next, LSU)
 #endif
 
-NODE* FUNC_IMPL(list_prev, SU)(NODE* n) {
+list_node(SU)* IMPL(list_prev, SU)(list_node(SU)* n) {
     return n ? n->priv_prev : NULL;
 }
 
@@ -132,10 +142,10 @@ NODE* FUNC_IMPL(list_prev, SU)(NODE* n) {
     // Returns NULL if given pointer was first node in the list
     // Returns NULL if passed NULL
     // O(1)
-    #define list_prev(LSU) FUNC_IMPL(list_prev, LSU)
+    #define list_prev(LSU) IMPL(list_prev, LSU)
 #endif
 
-T1* FUNC_IMPL(list_access, SU)(NODE* n) {
+T1* IMPL(list_access, SU)(list_node(SU)* n) {
     return &n->priv_obj;
 }
 
@@ -143,25 +153,25 @@ T1* FUNC_IMPL(list_access, SU)(NODE* n) {
     // Returns pointer to the object stored inside the given node
     // Do not invalidate the object, as the destructor (if provided) will be called on it sooner or later
     // O(1)
-    #define list_access(LSU) FUNC_IMPL(list_access, LSU)
+    #define list_access(LSU) IMPL(list_access, LSU)
 #endif
 
-const T1* FUNC_IMPL(list_const_access, SU)(NODE* n) {
+const T1* IMPL(list_const_access, SU)(list_node(SU)* n) {
     return &n->priv_obj;
 }
 
 #ifndef list_const_access
     // Returns read only pointer to the object stored inside the given node
     // O(1)
-    #define list_const_access(LSU) FUNC_IMPL(list_const_access, LSU)
+    #define list_const_access(LSU) IMPL(list_const_access, LSU)
 #endif
 
 /*
     Operations
 */
 
-NODE* FUNC_IMPL(list_push_before, SU)(NAME* tar, NODE* before, T1 value) {
-    NODE* new_node = (NODE*)A(sizeof(NODE));
+list_node(SU)* IMPL(list_push_before, SU)(list(SU)* tar, list_node(SU)* before, T1 value) {
+    list_node(SU)* new_node = (list_node(SU)*)A(sizeof(list_node(SU)));
     if (!new_node) return NULL;
 
     new_node->priv_obj = value;
@@ -176,8 +186,8 @@ NODE* FUNC_IMPL(list_push_before, SU)(NAME* tar, NODE* before, T1 value) {
 
         tar->priv_last = new_node;
     }
-    else {
-        // Insert before given node
+    // Insert before given list node
+    else {    
         new_node->priv_prev = before->priv_prev;
         new_node->priv_next = before;
 
@@ -195,12 +205,13 @@ NODE* FUNC_IMPL(list_push_before, SU)(NAME* tar, NODE* before, T1 value) {
     // Inserts new node with given value before the "before" node
     // If "before" node is NULL new node will be now the last one 
     // (it gets pushed before exclusive list end)
-    // May fail allocation, returns NULL on fail, valid pointer otherwise, O(1)
-    #define list_push_before(LSU) FUNC_IMPL(list_push_before, LSU)
+    // Takes ownership of object at success
+    // May fail allocation, returns NULL on fail, valid node pointer otherwise, O(1)
+    #define list_push_before(LSU) IMPL(list_push_before, LSU)
 #endif
 
-NODE* FUNC_IMPL(list_push_after, SU)(NAME* tar, NODE* after, T1 value) {
-    NODE* new_node = (NODE*)A(sizeof(NODE));
+list_node(SU)* IMPL(list_push_after, SU)(list(SU)* tar, list_node(SU)* after, T1 value) {
+    list_node(SU)* new_node = (list_node(SU)*)A(sizeof(list_node(SU)));
     if (!new_node) return NULL;
 
     new_node->priv_obj = value;
@@ -234,11 +245,12 @@ NODE* FUNC_IMPL(list_push_after, SU)(NAME* tar, NODE* after, T1 value) {
     // Inserts new node with given value after the "after" node
     // If "after" node is NULL new node will be now the first one
     // (it gets pushed after exclusive list begin)
-    // May fail allocation, returns NULL on fail, valid pointer otherwise, O(1)
-    #define list_push_after(LSU) FUNC_IMPL(list_push_after, LSU)
+    // Takes ownership of object at success
+    // May fail allocation, returns NULL on fail, node valid pointer otherwise, O(1)
+    #define list_push_after(LSU) IMPL(list_push_after, LSU)
 #endif
 
-void FUNC_IMPL(list_pop, SU)(NAME* tar, NODE* n, T1* out) {
+void IMPL(list_pop, SU)(list(SU)* tar, list_node(SU)* n, T1* out) {
     // get rid of object
     if (out) *out = n->priv_obj;
     else D_CALL(&n->priv_obj);
@@ -259,19 +271,17 @@ void FUNC_IMPL(list_pop, SU)(NAME* tar, NODE* n, T1* out) {
 #ifndef list_pop
     // Erases given element from the list
     // If out == NULL destructor will be called on contained object
-    // Otherwise *out = element, and destructor will not be called
+    // Otherwise *out = element, caller gets ownership over object and destructor will not be called
     // O(1)
-    #define list_pop(LSU) FUNC_IMPL(list_pop, LSU)
+    #define list_pop(LSU) IMPL(list_pop, LSU)
 #endif
 
-void FUNC_IMPL(list_clear, SU)(NAME* tar) {
+void IMPL(list_clear, SU)(list(SU)* tar) {
     list_destroy(SU)(tar); // apparently the same
 }
 
 #ifndef list_clear
-    #define list_clear(LSU) FUNC_IMPL(list_clear, LSU)
+    #define list_clear(LSU) IMPL(list_clear, LSU)
 #endif
 
 #undef D_CALL
-#undef NODE
-#undef NAME
