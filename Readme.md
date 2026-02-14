@@ -1,5 +1,4 @@
 # Riff
-
 Collection of header only, C utilities - macros, structures and algorithms, designed to be reused in range of future projects.
 
 ## Contents
@@ -7,7 +6,6 @@ Collection of header only, C utilities - macros, structures and algorithms, desi
 * Dynamic Array
 * Double-Linked-List
 * Hashmap
-* Segment Tree
 
 ## State of development
 Not mature yet. Still playing with core api.

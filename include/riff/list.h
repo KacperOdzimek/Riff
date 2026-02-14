@@ -69,7 +69,7 @@ void IMPL(list_destroy, SU)(list(SU)* tar) {
     while (cur) {
         list_node(SU)* next = cur->priv_next;
         D_CALL(&cur->priv_obj); // destroy object
-        F(cur); // free list_node(SU)
+        F(cur); // free node
         cur = next;
     }
 
@@ -96,7 +96,7 @@ size_t IMPL(list_size, SU)(const list(SU)* tar) {
 #endif
 
 /*
-    list_node(SU) Operations
+    Node Operations
 */
 
 list_node(SU)* IMPL(list_first, SU)(const list(SU)* tar) {
@@ -104,7 +104,7 @@ list_node(SU)* IMPL(list_first, SU)(const list(SU)* tar) {
 }
 
 #ifndef list_first 
-    // Returns pointer to the first list_node(SU) in the list
+    // Returns pointer to the first node in the list
     // NULL if list is empty
     // O(1)
     #define list_first(LSU) IMPL(list_first, LSU)
@@ -115,7 +115,7 @@ list_node(SU)* IMPL(list_last, SU)(const list(SU)* tar) {
 }
 
 #ifndef list_last
-    // Returns pointer to the last list_node(SU) in the list
+    // Returns pointer to the last node in the list
     // NULL if list is empty
     // O(1)
     #define list_last(LSU) IMPL(list_last, LSU)
@@ -126,8 +126,8 @@ list_node(SU)* IMPL(list_next, SU)(list_node(SU)* n) {
 }
 
 #ifndef list_next
-    // Given pointer to a list's list_node(SU), returns pointer to the next list's list_node(SU)
-    // Returns NULL if given pointer was last list_node(SU) in the list
+    // Given pointer to a list's node, returns pointer to the next list's node
+    // Returns NULL if given pointer was last node in the list
     // Returns NULL if passed NULL
     // O(1)
     #define list_next(LSU) IMPL(list_next, LSU)
@@ -138,8 +138,8 @@ list_node(SU)* IMPL(list_prev, SU)(list_node(SU)* n) {
 }
 
 #ifndef list_prev
-    // Given pointer to a list's list_node(SU), returns pointer to the previous list's list_node(SU)
-    // Returns NULL if given pointer was first list_node(SU) in the list
+    // Given pointer to a list's node, returns pointer to the previous list's node
+    // Returns NULL if given pointer was first node in the list
     // Returns NULL if passed NULL
     // O(1)
     #define list_prev(LSU) IMPL(list_prev, LSU)
@@ -150,7 +150,7 @@ T1* IMPL(list_access, SU)(list_node(SU)* n) {
 }
 
 #ifndef list_access
-    // Returns pointer to the object stored inside the given list_node(SU)
+    // Returns pointer to the object stored inside the given node
     // Do not invalidate the object, as the destructor (if provided) will be called on it sooner or later
     // O(1)
     #define list_access(LSU) IMPL(list_access, LSU)
@@ -161,7 +161,7 @@ const T1* IMPL(list_const_access, SU)(list_node(SU)* n) {
 }
 
 #ifndef list_const_access
-    // Returns read only pointer to the object stored inside the given list_node(SU)
+    // Returns read only pointer to the object stored inside the given node
     // O(1)
     #define list_const_access(LSU) IMPL(list_const_access, LSU)
 #endif
@@ -186,8 +186,8 @@ list_node(SU)* IMPL(list_push_before, SU)(list(SU)* tar, list_node(SU)* before, 
 
         tar->priv_last = new_node;
     }
-    else {
-        // Insert before given list_node(SU)
+    // Insert before given list node
+    else {    
         new_node->priv_prev = before->priv_prev;
         new_node->priv_next = before;
 
@@ -202,10 +202,11 @@ list_node(SU)* IMPL(list_push_before, SU)(list(SU)* tar, list_node(SU)* before, 
 }
 
 #ifndef list_push_before
-    // Inserts new list_node(SU) with given value before the "before" list_node(SU)
-    // If "before" list_node(SU) is NULL new list_node(SU) will be now the last one 
+    // Inserts new node with given value before the "before" node
+    // If "before" node is NULL new node will be now the last one 
     // (it gets pushed before exclusive list end)
-    // May fail allocation, returns NULL on fail, valid pointer otherwise, O(1)
+    // Takes ownership of object at success
+    // May fail allocation, returns NULL on fail, valid node pointer otherwise, O(1)
     #define list_push_before(LSU) IMPL(list_push_before, LSU)
 #endif
 
@@ -226,12 +227,12 @@ list_node(SU)* IMPL(list_push_after, SU)(list(SU)* tar, list_node(SU)* after, T1
         tar->priv_first = new_node;
     }
     else {
-        // Insert after given list_node(SU)
+        // Insert after given node
         new_node->priv_prev = after;
         new_node->priv_next = after->priv_next;
 
         if (after->priv_next) after->priv_next->priv_prev = new_node;
-        else                  tar->priv_last = new_node;  // inserting after last list_node(SU)
+        else                  tar->priv_last = new_node;  // inserting after last node
 
         after->priv_next = new_node;
     }
@@ -241,10 +242,11 @@ list_node(SU)* IMPL(list_push_after, SU)(list(SU)* tar, list_node(SU)* after, T1
 }
 
 #ifndef list_push_after
-    // Inserts new list_node(SU) with given value after the "after" list_node(SU)
-    // If "after" list_node(SU) is NULL new list_node(SU) will be now the first one
+    // Inserts new node with given value after the "after" node
+    // If "after" node is NULL new node will be now the first one
     // (it gets pushed after exclusive list begin)
-    // May fail allocation, returns NULL on fail, valid pointer otherwise, O(1)
+    // Takes ownership of object at success
+    // May fail allocation, returns NULL on fail, node valid pointer otherwise, O(1)
     #define list_push_after(LSU) IMPL(list_push_after, LSU)
 #endif
 
@@ -253,13 +255,13 @@ void IMPL(list_pop, SU)(list(SU)* tar, list_node(SU)* n, T1* out) {
     if (out) *out = n->priv_obj;
     else D_CALL(&n->priv_obj);
 
-    // Relink previous list_node(SU)
+    // Relink previous node
     if (n->priv_prev) n->priv_prev->priv_next = n->priv_next;
-    else              tar->priv_first = n->priv_next; // n was first list_node(SU)
+    else              tar->priv_first = n->priv_next; // n was first node
     
-    // Relink next list_node(SU)
+    // Relink next node
     if (n->priv_next) n->priv_next->priv_prev = n->priv_prev;
-    else              tar->priv_last = n->priv_prev; // n was last list_node(SU)
+    else              tar->priv_last = n->priv_prev; // n was last node
 
     // Decrease size and free
     tar->priv_size--;
@@ -269,7 +271,7 @@ void IMPL(list_pop, SU)(list(SU)* tar, list_node(SU)* n, T1* out) {
 #ifndef list_pop
     // Erases given element from the list
     // If out == NULL destructor will be called on contained object
-    // Otherwise *out = element, and destructor will not be called
+    // Otherwise *out = element, caller gets ownership over object and destructor will not be called
     // O(1)
     #define list_pop(LSU) IMPL(list_pop, LSU)
 #endif
