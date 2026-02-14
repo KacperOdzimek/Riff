@@ -24,7 +24,7 @@ Collection of header only, C utilities - macros, structures and algorithms, desi
 - Objects owned by a container are **automatically destroyed** when the container is destroyed.
 
 ### 3. Valid NULL / Zero States
-- Riff containers are valid when **zero-initialized**.  
+- Riff containers are valid even when **zero-initialized**.  
 - That means containers in global or static scope can be used **without prior initialization**.
 
 ### 4. Transparent Allocations
