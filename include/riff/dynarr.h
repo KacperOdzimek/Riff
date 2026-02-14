@@ -189,6 +189,7 @@ int IMPL(dynarr_push, SU)(dynarr(SU)* arr, T1 value) {
 
 #ifndef dynarr_push
     // This operation push new element into dynamic array
+    // If succeeded dynarr is now the owner of the object
     // May cause reallocation of dynamic array memory - watch out for your pointers
     // May fail, O(1) average
     #define dynarr_push(LSU) IMPL(dynarr_push, LSU)
