@@ -42,8 +42,9 @@ Optional macro params:
 #define HASH_FULL 1
 #define HASH_TOMB 2
 
-typedef struct NAME
-{
+#define INIT_CAPC 16
+
+typedef struct NAME {
     char*  priv_used;
     T1 *   priv_keys;
     T2 *   priv_values;
@@ -55,34 +56,22 @@ typedef struct NAME
     Initialization / Destruction
 */
 
-int FUNC_INTR(hashmap_init, SU)(NAME* tar, size_t cap) {
-    tar->priv_size = 0;
-    tar->priv_capc = cap;
-
-    tar->priv_used = (char *)A(tar->priv_capc * sizeof(char));
-    if (!tar->priv_used) return ERR;
-
-    tar->priv_keys = (T1 *)A(tar->priv_capc * sizeof(T1));
-    if (!tar->priv_keys) { F(tar->priv_used); return ERR; }
-
-    tar->priv_values = (T2 *)A(tar->priv_capc * sizeof(T2));
-    if (!tar->priv_values) { F(tar->priv_used); F(tar->priv_keys); return ERR; }
-
-    for (size_t i = 0; i < tar->priv_capc; ++i) tar->priv_used[i] = HASH_NONE;
-    return SCC;
+void FUNC_IMPL(hashmap_zero, SU)(NAME* tar) {
+    tar->priv_used   = 0;
+    tar->priv_keys   = 0;
+    tar->priv_values = 0;
+    tar->priv_size   = 0;
+    tar->priv_capc   = 0;
 }
 
-int FUNC_IMPL(hashmap_init, SU)(NAME *tar) {
-    return FUNC_INTR(hashmap_init, SU)(tar, 16);
-}
-
-#ifndef hashmap_init
-    // Inits hashmap structure
-    // May fail
-    #define hashmap_init(LSU) FUNC_IMPL(hashmap_init, LSU)
+#ifndef hashmap_zero
+    // Makes unitialized memory proper 0-initialized empty hashmap
+    // Does not free anything
+    #define hashmap_zero(LSU) FUNC_IMPL(hashmap_zero, LSU)
 #endif
 
 void FUNC_IMPL(hashmap_destroy, SU)(NAME *tar) {
+    // call destructors
     for (size_t i = 0; i < tar->priv_capc; i++) {
         if (tar->priv_used[i] == HASH_FULL) {
             KEY_D_CALL(&tar->priv_keys[i]);
@@ -90,15 +79,12 @@ void FUNC_IMPL(hashmap_destroy, SU)(NAME *tar) {
         }
     }
 
+    // free memory
     if (tar->priv_used)   F(tar->priv_used);
     if (tar->priv_keys)   F(tar->priv_keys);
     if (tar->priv_values) F(tar->priv_values);
 
-    tar->priv_used   = NULL;
-    tar->priv_keys   = NULL;
-    tar->priv_values = NULL;
-    tar->priv_size   = 0;
-    tar->priv_capc   = 0;
+    hashmap_zero(SU)(tar);
 }
 
 #ifndef hashmap_destroy
@@ -111,12 +97,32 @@ void FUNC_IMPL(hashmap_destroy, SU)(NAME *tar) {
     Memory
 */
 
+int FUNC_INTR(hashmap_alloc, SU)(NAME* tar, size_t cap) {
+    tar->priv_size = 0;
+    tar->priv_capc = cap;
+
+    tar->priv_used = (char*)A(tar->priv_capc * sizeof(char));
+    if (!tar->priv_used) return ERR;
+
+    tar->priv_keys = (T1*)A(tar->priv_capc * sizeof(T1));
+    if (!tar->priv_keys) { F(tar->priv_used); return ERR; }
+
+    tar->priv_values = (T2*)A(tar->priv_capc * sizeof(T2));
+    if (!tar->priv_values) { F(tar->priv_used); F(tar->priv_keys); return ERR; }
+
+    for (size_t i = 0; i < tar->priv_capc; ++i) tar->priv_used[i] = HASH_NONE;
+    return SCC;
+}
+
 int FUNC_IMPL(hashmap_push, SU)(NAME *tar, T1 key, T2 value); // forward
 
-int FUNC_IMPL(hashmap_rehash, SU)(NAME *tar, size_t new_capacity) {
+int FUNC_IMPL(hashmap_rehash, SU)(NAME* tar, size_t new_capacity) {
+    // null state now, just alloc
+    if (tar->priv_capc == 0) return FUNC_INTR(hashmap_alloc, SU)(tar, new_capacity);
+
     // alloc new map
     if (new_capacity < tar->priv_size) return ERR;
-    NAME new_map; if (FUNC_INTR(hashmap_init, SU)(&new_map, new_capacity) == ERR) return ERR;
+    NAME new_map; if (FUNC_INTR(hashmap_alloc, SU)(&new_map, new_capacity) == ERR) return ERR;
 
     // reinsert items into new map
     for (size_t i = 0; i < tar->priv_capc; ++i) {
@@ -152,8 +158,9 @@ int FUNC_IMPL(hashmap_rehash, SU)(NAME *tar, size_t new_capacity) {
 */
 
 int FUNC_IMPL(hashmap_find, SU)(NAME* tar, T1 user_key, const T1** inner_key, T2** value) {
-    size_t idx = F1(&user_key) % tar->priv_capc;
+    if (tar->priv_capc == 0) return ERR; // empty map -> nothing can be found
 
+    size_t idx = F1(&user_key) % tar->priv_capc;
     for (size_t i = 0; i < tar->priv_capc; ++i) {
         size_t pos = (idx + i) % tar->priv_capc;
 
@@ -206,6 +213,12 @@ void FUNC_IMPL(hashmap_pop, SU)(NAME* tar, const T1* INNER_key, T2* out) {
 #endif
 
 int FUNC_IMPL(hashmap_push, SU)(NAME* tar, T1 key, T2 value) {
+    // If none memory assigned, allocate
+    if (tar->priv_capc == 0) {
+        int scc = FUNC_INTR(hashmap_alloc, SU)(tar, INIT_CAPC);
+        if (scc == ERR) return ERR; // allocation failed
+    }
+
     // Double memory if load factor exceeds 0.7
     if ((tar->priv_size + 1) * 10 > tar->priv_capc * 7) {
         // grow, if grow fails try to fit anyway - there still may be some free spots in the array
@@ -267,6 +280,8 @@ void FUNC_IMPL(hashmap_clear, SU)(NAME* tar) {
     // O(n)
     #define hashmap_clear(LSU) FUNC_IMPL(hashmap_clear, LSU)
 #endif
+
+#undef INIT_CAPC
 
 #undef HASH_NONE
 #undef HASH_FULL

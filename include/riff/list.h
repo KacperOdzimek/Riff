@@ -43,14 +43,16 @@ typedef struct NAME {
     Initialization / Destruction
 */
 
-void FUNC_IMPL(list_init, SU)(NAME* tar) {
+void FUNC_IMPL(list_zero, SU)(NAME* tar) {
     tar->priv_size  = 0;
     tar->priv_first = NULL;
     tar->priv_last  = NULL;
 }
 
-#ifndef list_init
-    #define list_init(LSU) FUNC_IMPL(list_init, LSU)
+#ifndef list_zero
+    // Makes unitialized memory proper 0-initialized empty list
+    // Does not free anything
+    #define list_zero(LSU) FUNC_IMPL(list_zero, LSU)
 #endif
 
 void FUNC_IMPL(list_destroy, SU)(NAME* tar) {
@@ -62,12 +64,11 @@ void FUNC_IMPL(list_destroy, SU)(NAME* tar) {
         cur = next;
     }
 
-    tar->priv_size  = 0;
-    tar->priv_first = NULL;
-    tar->priv_last  = NULL;
+    list_zero(SU)(tar);
 }
 
 #ifndef list_destroy
+    // Free allocated memory, destroys owned objects
     #define list_destroy(LSU) FUNC_IMPL(list_destroy, LSU)
 #endif
 

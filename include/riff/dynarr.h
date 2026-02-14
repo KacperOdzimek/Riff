@@ -39,28 +39,22 @@ typedef struct NAME {
     Initialization / Destruction
 */
 
-int FUNC_IMPL(dynarr_init, SU)(NAME* tar, size_t initial_capacity) {
-    // do not allow capacity == 0, so we dont have to check on that later
-    if (initial_capacity == 0) initial_capacity = 1;
+void FUNC_IMPL(dynarr_zero, SU)(NAME* tar) {
     tar->priv_size = 0;
-    tar->priv_data = (T1*)A(initial_capacity * sizeof(T1));
-    if (!tar->priv_data) return ERR; // allocation error
-    tar->priv_capc = initial_capacity;
-    return SCC;
+    tar->priv_capc = 0;
+    tar->priv_data = 0;
 }
 
-#ifndef dynarr_init
-    // Inits dynamic array with given capacity
-    // May fail, O(1)
-    #define dynarr_init(LSU) FUNC_IMPL(dynarr_init, LSU)
+#ifndef dynarr_zero
+    // Makes unitialized memory proper 0-initialized empty dynamic array
+    // Does not free anything
+    #define dynarr_zero(LSU) FUNC_IMPL(dynarr_zero, LSU)
 #endif
 
 void FUNC_IMPL(dynarr_destroy, SU)(NAME* tar) {
     D_LOOP(tar->priv_data, tar->priv_data + tar->priv_size);
     F(tar->priv_data);
-    tar->priv_data = NULL;
-    tar->priv_capc = 0;
-    tar->priv_size = 0;
+    dynarr_zero(SU)(tar);
 }
 
 #ifndef dynarr_destroy
@@ -76,6 +70,7 @@ void FUNC_IMPL(dynarr_destroy, SU)(NAME* tar) {
 int FUNC_IMPL(dynarr_reserve, SU)(NAME* arr, size_t capacity) {
     if (arr->priv_capc >= capacity) return SCC; // already have
     
+    // realloc into bigger block
     T1* new_data = (T1*)R(arr->priv_data, capacity * sizeof(T1));
     if (!new_data) return ERR; // realloc failed
 
@@ -92,9 +87,15 @@ int FUNC_IMPL(dynarr_reserve, SU)(NAME* arr, size_t capacity) {
 
 int FUNC_IMPL(dynarr_shrink_to_fit, SU)(NAME* arr) {
     size_t new_cap = arr->priv_size;
-    if (new_cap == 0) new_cap++; // never cause data to be NULL
     if (arr->priv_capc == new_cap) return SCC; // already shrunk
+
+    // fall to zero state
+    if (new_cap == 0) {
+        dynarr_destroy(SU)(arr);
+        return SCC;
+    }
     
+    // realloc block
     T1* new_data = R(arr->priv_data, new_cap * sizeof(T1));
     if (!new_data) return ERR; // realocation failed
 
@@ -166,7 +167,7 @@ const T1* FUNC_IMPL(dynarr_const_access, SU)(const NAME* arr) {
 
 int FUNC_IMPL(dynarr_push, SU)(NAME* arr, T1 value) {
     if (arr->priv_size >= arr->priv_capc) {
-        size_t new_cap = arr->priv_capc * 2;
+        size_t new_cap = arr->priv_capc ? arr->priv_capc * 2 : 1;
         void* new_data = (T1*)R(arr->priv_data, new_cap * sizeof(T1));
         if (!new_data) return ERR; // allocation failed
         arr->priv_capc = new_cap;
