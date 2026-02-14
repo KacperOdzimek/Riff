@@ -167,6 +167,61 @@ int IMPL(hashmap_rehash, SU)(hashmap(SU)* tar, size_t new_capacity) {
     Operations
 */
 
+int IMPL(hashmap_push, SU)(hashmap(SU)* tar, T1 key, T2 value) {
+    // If none memory assigned, allocate
+    if (tar->priv_capc == 0) {
+        int scc = INTR(hashmap_alloc, SU)(tar, INIT_CAPC);
+        if (scc == ERR) return ERR; // allocation failed
+    }
+
+    // Double memory if load factor exceeds 0.7
+    if ((tar->priv_size + 1) * 10 > tar->priv_capc * 7) {
+        // grow, if grow fails try to fit anyway - there still may be some free spots in the array
+        IMPL(hashmap_rehash, SU)(tar, tar->priv_capc * 2);
+    }
+
+    size_t idx  = F1(&key) % tar->priv_capc;
+    size_t first_tombstone = (size_t)(-1);
+
+    for (size_t i = 0; i < tar->priv_capc; ++i) {
+        size_t pos = (idx + i) % tar->priv_capc;
+
+        // check if key is exactly the same, if so replace value
+        if (tar->priv_used[pos] == HASH_FULL && F2(&tar->priv_keys[pos], &key)) {
+            KEY_D_CALL(&tar->priv_keys[pos]);   // free old key
+            VAL_D_CALL(&tar->priv_values[pos]); // free old value
+            tar->priv_keys[pos]   = key;
+            tar->priv_values[pos] = value;
+            return SCC;
+        }
+        // remember first tombstone
+        else if (tar->priv_used[pos] == HASH_TOMB) {
+            if (first_tombstone == (size_t)(-1)) first_tombstone = pos; // remember first tombstone
+        }
+        // insert at first tombstone if available, else at empty slot
+        else if (tar->priv_used[pos] == HASH_NONE) {  
+            size_t insert_pos = (first_tombstone != (size_t)(-1)) ? first_tombstone : pos;
+
+            tar->priv_used[insert_pos]   = HASH_FULL;
+            tar->priv_keys[insert_pos]   = key;
+            tar->priv_values[insert_pos] = value;
+            tar->priv_size++;
+
+            return SCC;
+        }
+    }
+
+    // hashmap full -> cannot push (happens if rehash fails multiple times)
+    return ERR;
+}
+
+#ifndef hashmap_push
+    // Inserts new or replace value at given key
+    // Given key and value are owned by the hashmap on success
+    // May fail (if failed to resize), O(1) avg O(n) worst
+    #define hashmap_push(LSU) IMPL(hashmap_push, LSU)
+#endif
+
 int IMPL(hashmap_find, SU)(hashmap(SU)* tar, T1 user_key, const T1** inner_key, T2** value) {
     if (tar->priv_capc == 0) return ERR; // empty map -> nothing can be found
 
@@ -214,67 +269,12 @@ void IMPL(hashmap_pop, SU)(hashmap(SU)* tar, const T1* INNER_key, T2* out) {
     // This function removes given key from the map
     //
     // IMPORTANT
-    // INNER_key must be result of hashmap_finc, (const T1** inner_key)
+    // INNER_key must be result of hashmap_find, (const T1** inner_key)
     // called otherwise this function will lead to segfaults
     //
     // if out is NULL, stored value will be destructed (if destructor provided)
     // otherwise it will be moved into *out
     #define hashmap_pop(LSU) IMPL(hashmap_pop, LSU)
-#endif
-
-int IMPL(hashmap_push, SU)(hashmap(SU)* tar, T1 key, T2 value) {
-    // If none memory assigned, allocate
-    if (tar->priv_capc == 0) {
-        int scc = INTR(hashmap_alloc, SU)(tar, INIT_CAPC);
-        if (scc == ERR) return ERR; // allocation failed
-    }
-
-    // Double memory if load factor exceeds 0.7
-    if ((tar->priv_size + 1) * 10 > tar->priv_capc * 7) {
-        // grow, if grow fails try to fit anyway - there still may be some free spots in the array
-        IMPL(hashmap_rehash, SU)(tar, tar->priv_capc * 2);
-    }
-
-    size_t idx  = F1(&key) % tar->priv_capc;
-    size_t first_tombstone = (size_t)(-1);
-
-    for (size_t i = 0; i < tar->priv_capc; ++i) {
-        size_t pos = (idx + i) % tar->priv_capc;
-
-        // check if key is exactly the same, if so replace value
-        if (tar->priv_used[pos] == HASH_FULL && F2(&tar->priv_keys[pos], &key)) {
-            VAL_D_CALL(&tar->priv_values[pos]); // free old value
-            KEY_D_CALL(&tar->priv_keys[pos]);   // free old key
-            tar->priv_keys[pos]   = key;
-            tar->priv_values[pos] = value;
-            return SCC;
-        }
-        // remember first tombstone
-        else if (tar->priv_used[pos] == HASH_TOMB) {
-            if (first_tombstone == (size_t)(-1)) first_tombstone = pos; // remember first tombstone
-        }
-        // insert at first tombstone if available, else at empty slot
-        else if (tar->priv_used[pos] == HASH_NONE) {  
-            size_t insert_pos = (first_tombstone != (size_t)(-1)) ? first_tombstone : pos;
-
-            tar->priv_used[insert_pos]   = HASH_FULL;
-            tar->priv_keys[insert_pos]   = key;
-            tar->priv_values[insert_pos] = value;
-            tar->priv_size++;
-
-            return SCC;
-        }
-    }
-
-    // hashmap full -> cannot push (happens if rehash fails multiple times)
-    return ERR;
-}
-
-#ifndef hashmap_push
-    // Inserts new or replace value at given key
-    // Given key and value are now managed my map and provided deconstructors
-    // May fail (if failed to resize), O(1) avg O(n) worst
-    #define hashmap_push(LSU) IMPL(hashmap_push, LSU)
 #endif
 
 void IMPL(hashmap_clear, SU)(hashmap(SU)* tar) {
