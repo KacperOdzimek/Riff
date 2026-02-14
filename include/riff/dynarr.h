@@ -201,7 +201,7 @@ int IMPL(dynarr_pop, SU)(dynarr(SU)* arr, T1* out) {
     // transfer to out
     if (out) *out = ((T1*)arr->priv_data)[arr->priv_size];
     // destroy element
-    else     D_CALL(&((T1*)arr->priv_data)[arr->priv_size]);
+    else D_CALL(&((T1*)arr->priv_data)[arr->priv_size]);
 
     return SCC;
 }

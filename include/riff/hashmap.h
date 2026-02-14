@@ -124,7 +124,7 @@ int INTR(hashmap_alloc, SU)(hashmap(SU)* tar, size_t cap) {
     return SCC;
 }
 
-int IMPL(hashmap_push, SU)(hashmap(SU) *tar, T1 key, T2 value); // forward
+int IMPL(hashmap_push, SU)(hashmap(SU)* tar, T1 key, T2 value); // forward
 
 int IMPL(hashmap_rehash, SU)(hashmap(SU)* tar, size_t new_capacity) {
     // null state now, just alloc
@@ -241,9 +241,11 @@ int IMPL(hashmap_push, SU)(hashmap(SU)* tar, T1 key, T2 value) {
     for (size_t i = 0; i < tar->priv_capc; ++i) {
         size_t pos = (idx + i) % tar->priv_capc;
 
-         // check if key is exactly the same, if so replace value
+        // check if key is exactly the same, if so replace value
         if (tar->priv_used[pos] == HASH_FULL && F2(&tar->priv_keys[pos], &key)) {
             VAL_D_CALL(&tar->priv_values[pos]); // free old value
+            KEY_D_CALL(&tar->priv_keys[pos]);   // free old key
+            tar->priv_keys[pos]   = key;
             tar->priv_values[pos] = value;
             return SCC;
         }
@@ -277,12 +279,13 @@ int IMPL(hashmap_push, SU)(hashmap(SU)* tar, T1 key, T2 value) {
 
 void IMPL(hashmap_clear, SU)(hashmap(SU)* tar) {
     for (size_t i = 0; i < tar->priv_capc; i++) {
-        if (tar->priv_used[i]) {
+        if (tar->priv_used[i] == HASH_FULL) {
             KEY_D_CALL(&tar->priv_keys[i]);
             VAL_D_CALL(&tar->priv_values[i]);
         }
         tar->priv_used[i] = HASH_NONE; // can do this
     }
+    tar->priv_size = 0;
 }
 
 #ifndef hashmap_clear
