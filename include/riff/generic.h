@@ -1,17 +1,48 @@
 #ifndef GENERIC_H
 #define GENERIC_H
 
-#define CAT2(a, b) a##b
-#define CAT(a, b)  CAT2(a, b)
+// T/A macros selectors
+#define RIFF_FIRST_IMPL(a, ...) a
+#define RIFF_FIRST(...)   RIFF_FIRST_IMPL(__VA_ARGS__)
+
+#define RIFF_SECOND_IMPL(a,b, ...) b
+#define RIFF_SECOND(...)  RIFF_SECOND_IMPL(__VA_ARGS__)
+
+#define RIFF_THIRD_IMPL(a,b,c, ...) c
+#define RIFF_THIRD(...)   RIFF_THIRD_IMPL(__VA_ARGS__)
+
+#define RIFF_FOURTH_IMPL(a,b,c,d, ...) d
+#define RIFF_FOURTH(...)  RIFF_FOURTH_IMPL(__VA_ARGS__)
+
+#define RIFF_FIFTH_IMPL(a,b,c,d,e, ...) e
+#define RIFF_FIFTH(...)   RIFF_FIFTH_IMPL(__VA_ARGS__)
+
+#define RIFF_SIXTH_IMPL(a,b,c,d,e,f, ...) f
+#define RIFF_SIXTH(...)   RIFF_SIXTH_IMPL(__VA_ARGS__)
+
+#define RIFF_SEVENTH_IMPL(a,b,c,d,e,f,g, ...) g
+#define RIFF_SEVENTH(...) RIFF_SEVENTH_IMPL(__VA_ARGS__)
+
+#define RIFF_EIGHTH_IMPL(a,b,c,d,e,f,g,h, ...) h
+#define RIFF_EIGHTH(...)  RIFF_EIGHTH_IMPL(__VA_ARGS__)
+
+#define RIFF_NINTH_IMPL(a,b,c,d,e,f,g,h,i, ...) i
+#define RIFF_NINTH(...)   RIFF_NINTH_IMPL(__VA_ARGS__)
+
+#define RIFF_TENTH_IMPL(a,b,c,d,e,f,g,h,i,j, ...) j
+#define RIFF_TENTH(...)   RIFF_TENTH_IMPL(__VA_ARGS__)
+
+#define RIFF_CAT_IMPL(a, b) a##b
+#define RIFF_CAT(a, b)  RIFF_CAT_IMPL(a, b)
 
 // for making generic struct names
-#define NAME(base, suf)      CAT(CAT(CAT(riff_struct_of_, base), _), suf)
+#define RIFF_NAME(base, suf)      RIFF_CAT(RIFF_CAT(RIFF_CAT(riff_struct_of_, base), _), suf)
 
 // for making dispatch macros
-#define IMPL(func_name, SUF) CAT(CAT(riff_implementation_of_, func_name), CAT(_for_, SUF))
+#define RIFF_INST(func_name, SUF) RIFF_CAT(RIFF_CAT(riff_implementation_of_, func_name), RIFF_CAT(_for_, SUF))
 
 // for making internal functions
-#define INTR(func_name, SUF) CAT(CAT(riff_internal_func_, func_name), CAT(_for_, SUF))
+#define RIFF_INTR(func_name, SUF) RIFF_CAT(RIFF_CAT(riff_internal_func_, func_name), RIFF_CAT(_for_, SUF))
 
 // success flag
 #define SCC 1
@@ -19,19 +50,16 @@
 // error flag
 #define ERR 0
 
+// dispatch A macro
+#define RIFF_ALLOC   RIFF_FIRST(A)
+#define RIFF_REALLOC RIFF_SECOND(A)
+#define RIFF_FREE    RIFF_THIRD(A)
+
 #endif // GENERIC_H
 
 // do on every include:
 
 // default allocator
 #ifndef A
-    #define A malloc
-#endif
-
-#ifndef R
-    #define R realloc
-#endif
-
-#ifndef F
-    #define F free
+    #define A malloc, realloc, free
 #endif

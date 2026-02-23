@@ -1,58 +1,53 @@
 /*
-Mandatory macro params:
-    SU - name suffix
-    T1 - stored type
-
-Optional macro params:
-    D1 - destructor for stored type                 (do not define if none)
-    A  - custom allocator, same signature as malloc (defaults to malloc)
-    R  - custom matching reallocator                (defaults to realloc)
-    F  - custom matching free                       (defaults to free)
-*/
-
-/*
     List
     Double-linked list
     O(n) memory complexity
 */
 
+/*
+    T macro pattern
+        [instance name], [stored type], [stored type destructor (opt)]
+*/
+
 #include "generic.h"
 
+/*
+    Unpack and Helpers
+*/
+
+#define INSTANCE   RIFF_FIRST(T)
+#define STORED     RIFF_SECOND(T)
+#define DESTRUCTOR RIFF_THIRD(T)
+
+/*
+    Typedef
+*/
+
 #ifndef list_node
-    #define list_node(LSU) NAME(list_node, LSU)
+    #define list_node(inst) RIFF_NAME(list_node, inst)
 #endif
 
 #ifndef list
-    #define list(LSU) NAME(list, LSU)
+    #define list(inst) RIFF_NAME(list, inst)
 #endif
 
-typedef struct list_node(SU) {
-    T1                    priv_obj;
-    struct list_node(SU)* priv_prev;
-    struct list_node(SU)* priv_next;
-} list_node(SU);
+typedef struct list_node(INSTANCE) {
+    STORED                priv_obj;
+    struct list_node(INSTANCE)* priv_prev;
+    struct list_node(INSTANCE)* priv_next;
+} list_node(INSTANCE);
 
-typedef struct list(SU) {
+typedef struct list(INSTANCE) {
     size_t          priv_size;
-    list_node(SU)*  priv_first;
-    list_node(SU)*  priv_last;
-} list(SU);
-
-/*
-    Helpers
-*/
-
-#ifdef D1
-    #define D_CALL(ptr) D1(ptr)
-#else
-    #define D_CALL(ptr) ((void)0)
-#endif
+    list_node(INSTANCE)*  priv_first;
+    list_node(INSTANCE)*  priv_last;
+} list(INSTANCE);
 
 /*
     Zero / Destruction
 */
 
-void IMPL(list_zero, SU)(list(SU)* tar) {
+void RIFF_INST(list_zero, INSTANCE)(list(INSTANCE)* tar) {
     tar->priv_size  = 0;
     tar->priv_first = NULL;
     tar->priv_last  = NULL;
@@ -61,45 +56,45 @@ void IMPL(list_zero, SU)(list(SU)* tar) {
 #ifndef list_zero
     // Makes unitialized memory proper 0-initialized empty list
     // Does not free anything
-    #define list_zero(LSU) IMPL(list_zero, LSU)
+    #define list_zero(inst) RIFF_INST(list_zero, inst)
 #endif
 
-void IMPL(list_destroy, SU)(list(SU)* tar) {
-    list_node(SU)* cur = tar->priv_first;
+void RIFF_INST(list_destroy, INSTANCE)(list(INSTANCE)* tar) {
+    list_node(INSTANCE)* cur = tar->priv_first;
     while (cur) {
-        list_node(SU)* next = cur->priv_next;
-        D_CALL(&cur->priv_obj); // destroy object
-        F(cur); // free node
+        list_node(INSTANCE)* next = cur->priv_next;
+        DESTRUCTOR(&cur->priv_obj); // destroy object
+        RIFF_FREE(cur); // free node
         cur = next;
     }
 
-    list_zero(SU)(tar);
+    list_zero(INSTANCE)(tar);
 }
 
 #ifndef list_destroy
     // Free allocated memory, destroys owned objects
-    #define list_destroy(LSU) IMPL(list_destroy, LSU)
+    #define list_destroy(inst) RIFF_INST(list_destroy, inst)
 #endif
 
 /*
     Getters
 */
 
-size_t IMPL(list_size, SU)(const list(SU)* tar) {
+size_t RIFF_INST(list_size, INSTANCE)(const list(INSTANCE)* tar) {
     return tar->priv_size;
 }
 
 #ifndef list_size
     // Returns list size
     // O(1)
-    #define list_size(LSU) IMPL(list_size, LSU)
+    #define list_size(inst) RIFF_INST(list_size, inst)
 #endif
 
 /*
     Node Operations
 */
 
-list_node(SU)* IMPL(list_first, SU)(const list(SU)* tar) {
+list_node(INSTANCE)* RIFF_INST(list_first, INSTANCE)(const list(INSTANCE)* tar) {
     return tar->priv_first;
 }
 
@@ -107,10 +102,10 @@ list_node(SU)* IMPL(list_first, SU)(const list(SU)* tar) {
     // Returns pointer to the first node in the list
     // NULL if list is empty
     // O(1)
-    #define list_first(LSU) IMPL(list_first, LSU)
+    #define list_first(inst) RIFF_INST(list_first, inst)
 #endif
 
-list_node(SU)* IMPL(list_last, SU)(const list(SU)* tar) {
+list_node(INSTANCE)* RIFF_INST(list_last, INSTANCE)(const list(INSTANCE)* tar) {
     return tar->priv_last;
 }
 
@@ -118,10 +113,10 @@ list_node(SU)* IMPL(list_last, SU)(const list(SU)* tar) {
     // Returns pointer to the last node in the list
     // NULL if list is empty
     // O(1)
-    #define list_last(LSU) IMPL(list_last, LSU)
+    #define list_last(inst) RIFF_INST(list_last, inst)
 #endif
 
-list_node(SU)* IMPL(list_next, SU)(list_node(SU)* n) {
+list_node(INSTANCE)* RIFF_INST(list_next, INSTANCE)(list_node(INSTANCE)* n) {
     return n ? n->priv_next : NULL;
 }
 
@@ -130,10 +125,10 @@ list_node(SU)* IMPL(list_next, SU)(list_node(SU)* n) {
     // Returns NULL if given pointer was last node in the list
     // Returns NULL if passed NULL
     // O(1)
-    #define list_next(LSU) IMPL(list_next, LSU)
+    #define list_next(inst) RIFF_INST(list_next, inst)
 #endif
 
-list_node(SU)* IMPL(list_prev, SU)(list_node(SU)* n) {
+list_node(INSTANCE)* RIFF_INST(list_prev, INSTANCE)(list_node(INSTANCE)* n) {
     return n ? n->priv_prev : NULL;
 }
 
@@ -142,10 +137,10 @@ list_node(SU)* IMPL(list_prev, SU)(list_node(SU)* n) {
     // Returns NULL if given pointer was first node in the list
     // Returns NULL if passed NULL
     // O(1)
-    #define list_prev(LSU) IMPL(list_prev, LSU)
+    #define list_prev(inst) RIFF_INST(list_prev, inst)
 #endif
 
-T1* IMPL(list_access, SU)(list_node(SU)* n) {
+STORED* RIFF_INST(list_access, INSTANCE)(list_node(INSTANCE)* n) {
     return &n->priv_obj;
 }
 
@@ -153,25 +148,25 @@ T1* IMPL(list_access, SU)(list_node(SU)* n) {
     // Returns pointer to the object stored inside the given node
     // Do not invalidate the object, as the destructor (if provided) will be called on it sooner or later
     // O(1)
-    #define list_access(LSU) IMPL(list_access, LSU)
+    #define list_access(inst) RIFF_INST(list_access, inst)
 #endif
 
-const T1* IMPL(list_const_access, SU)(list_node(SU)* n) {
+const STORED* RIFF_INST(list_const_access, INSTANCE)(list_node(INSTANCE)* n) {
     return &n->priv_obj;
 }
 
 #ifndef list_const_access
     // Returns read only pointer to the object stored inside the given node
     // O(1)
-    #define list_const_access(LSU) IMPL(list_const_access, LSU)
+    #define list_const_access(inst) RIFF_INST(list_const_access, inst)
 #endif
 
 /*
     Operations
 */
 
-list_node(SU)* IMPL(list_push_before, SU)(list(SU)* tar, list_node(SU)* before, T1 value) {
-    list_node(SU)* new_node = (list_node(SU)*)A(sizeof(list_node(SU)));
+list_node(INSTANCE)* RIFF_INST(list_push_before, INSTANCE)(list(INSTANCE)* tar, list_node(INSTANCE)* before, STORED value) {
+    list_node(INSTANCE)* new_node = (list_node(INSTANCE)*)RIFF_ALLOC(sizeof(list_node(INSTANCE)));
     if (!new_node) return NULL;
 
     new_node->priv_obj = value;
@@ -207,11 +202,11 @@ list_node(SU)* IMPL(list_push_before, SU)(list(SU)* tar, list_node(SU)* before, 
     // (it gets pushed before exclusive list end)
     // Takes ownership of object at success
     // May fail allocation, returns NULL on fail, valid node pointer otherwise, O(1)
-    #define list_push_before(LSU) IMPL(list_push_before, LSU)
+    #define list_push_before(inst) RIFF_INST(list_push_before, inst)
 #endif
 
-list_node(SU)* IMPL(list_push_after, SU)(list(SU)* tar, list_node(SU)* after, T1 value) {
-    list_node(SU)* new_node = (list_node(SU)*)A(sizeof(list_node(SU)));
+list_node(INSTANCE)* RIFF_INST(list_push_after, INSTANCE)(list(INSTANCE)* tar, list_node(INSTANCE)* after, STORED value) {
+    list_node(INSTANCE)* new_node = (list_node(INSTANCE)*)RIFF_ALLOC(sizeof(list_node(INSTANCE)));
     if (!new_node) return NULL;
 
     new_node->priv_obj = value;
@@ -247,13 +242,13 @@ list_node(SU)* IMPL(list_push_after, SU)(list(SU)* tar, list_node(SU)* after, T1
     // (it gets pushed after exclusive list begin)
     // Takes ownership of object at success
     // May fail allocation, returns NULL on fail, node valid pointer otherwise, O(1)
-    #define list_push_after(LSU) IMPL(list_push_after, LSU)
+    #define list_push_after(inst) RIFF_INST(list_push_after, inst)
 #endif
 
-void IMPL(list_pop, SU)(list(SU)* tar, list_node(SU)* n, T1* out) {
+void RIFF_INST(list_pop, INSTANCE)(list(INSTANCE)* tar, list_node(INSTANCE)* n, STORED* out) {
     // get rid of object
     if (out) *out = n->priv_obj;
-    else D_CALL(&n->priv_obj);
+    else DESTRUCTOR(&n->priv_obj);
 
     // Relink previous node
     if (n->priv_prev) n->priv_prev->priv_next = n->priv_next;
@@ -265,7 +260,7 @@ void IMPL(list_pop, SU)(list(SU)* tar, list_node(SU)* n, T1* out) {
 
     // Decrease size and free
     tar->priv_size--;
-    F(n);
+    RIFF_FREE(n);
 }
 
 #ifndef list_pop
@@ -273,15 +268,17 @@ void IMPL(list_pop, SU)(list(SU)* tar, list_node(SU)* n, T1* out) {
     // If out == NULL destructor will be called on contained object
     // Otherwise *out = element, caller gets ownership over object and destructor will not be called
     // O(1)
-    #define list_pop(LSU) IMPL(list_pop, LSU)
+    #define list_pop(inst) RIFF_INST(list_pop, inst)
 #endif
 
-void IMPL(list_clear, SU)(list(SU)* tar) {
-    list_destroy(SU)(tar); // apparently the same
+void RIFF_INST(list_clear, INSTANCE)(list(INSTANCE)* tar) {
+    list_destroy(INSTANCE)(tar); // apparently the same
 }
 
 #ifndef list_clear
-    #define list_clear(LSU) IMPL(list_clear, LSU)
+    #define list_clear(inst) RIFF_INST(list_clear, inst)
 #endif
 
-#undef D_CALL
+#undef INSTANCE
+#undef STORED
+#undef DESTRUCTOR
