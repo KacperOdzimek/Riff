@@ -35,14 +35,8 @@
 #define RIFF_CAT_IMPL(a, b) a##b
 #define RIFF_CAT(a, b)  RIFF_CAT_IMPL(a, b)
 
-// for making generic struct names
-#define RIFF_NAME(base, suf)      RIFF_CAT(RIFF_CAT(RIFF_CAT(riff_struct_of_, base), _), suf)
-
-// for making dispatch macros
-#define RIFF_INST(func_name, SUF) RIFF_CAT(RIFF_CAT(riff_implementation_of_, func_name), RIFF_CAT(_for_, SUF))
-
-// for making internal functions
-#define RIFF_INTR(func_name, SUF) RIFF_CAT(RIFF_CAT(riff_internal_func_, func_name), RIFF_CAT(_for_, SUF))
+// for making instances-names
+#define RIFF_INST(thing, instance_name) RIFF_CAT(RIFF_CAT(riff_implementation_of_, thing), RIFF_CAT(_for_, instance_name))
 
 // success flag
 #define SCC 1

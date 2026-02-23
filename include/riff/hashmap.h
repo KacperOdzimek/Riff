@@ -38,7 +38,7 @@
         Allow for avg. O(1) access to elements by it's keys.
         O(n) memory complexity
     */
-    #define hmap(inst) RIFF_NAME(hmap, inst)
+    #define hmap(inst) RIFF_INST(hmap, inst)
 #endif
 
 typedef struct hmap(INSTANCE) {
@@ -94,7 +94,7 @@ void RIFF_INST(hmap_destroy, INSTANCE)(hmap(INSTANCE) *tar) {
     Memory
 */
 
-int RIFF_INTR(hmap_alloc, INSTANCE)(hmap(INSTANCE)* tar, size_t cap) {
+int RIFF_INST(hmap_internal_alloc, INSTANCE)(hmap(INSTANCE)* tar, size_t cap) {
     tar->priv_size = 0;
     tar->priv_capc = cap;
 
@@ -117,11 +117,11 @@ int RIFF_INST(hmap_push, INSTANCE)(hmap(INSTANCE)* tar, KEY key, VAL value); // 
 
 int RIFF_INST(hmap_rehash, INSTANCE)(hmap(INSTANCE)* tar, size_t new_capacity) {
     // null state now, just alloc
-    if (tar->priv_capc == 0) return RIFF_INTR(hmap_alloc, INSTANCE)(tar, new_capacity);
+    if (tar->priv_capc == 0) return RIFF_INST(hmap_internal_alloc, INSTANCE)(tar, new_capacity);
 
     // alloc new map
     if (new_capacity < tar->priv_size) return ERR;
-    hmap(INSTANCE) new_map; if (RIFF_INTR(hmap_alloc, INSTANCE)(&new_map, new_capacity) == ERR) return ERR;
+    hmap(INSTANCE) new_map; if (RIFF_INST(hmap_internal_alloc, INSTANCE)(&new_map, new_capacity) == ERR) return ERR;
 
     // reinsert items into new map
     for (size_t i = 0; i < tar->priv_capc; ++i) {
@@ -159,7 +159,7 @@ int RIFF_INST(hmap_rehash, INSTANCE)(hmap(INSTANCE)* tar, size_t new_capacity) {
 int RIFF_INST(hmap_push, INSTANCE)(hmap(INSTANCE)* tar, KEY key, VAL value) {
     // If none memory assigned, allocate
     if (tar->priv_capc == 0) {
-        int scc = RIFF_INTR(hmap_alloc, INSTANCE)(tar, INIT_CAPC);
+        int scc = RIFF_INST(hmap_internal_alloc, INSTANCE)(tar, INIT_CAPC);
         if (scc == ERR) return ERR; // allocation failed
     }
 

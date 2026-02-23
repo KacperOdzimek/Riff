@@ -21,7 +21,7 @@
     /*
         Double linked list node
     */
-    #define dlst_node(inst) RIFF_NAME(dlst_node, inst)
+    #define dlst_node(inst) RIFF_INST(dlst_node, inst)
 #endif
 
 #ifndef dlst
@@ -29,7 +29,7 @@
         Double-linked list (dlst)
         O(n) memory complexity
     */
-    #define dlst(inst) RIFF_NAME(dlst, inst)
+    #define dlst(inst) RIFF_INST(dlst, inst)
 #endif
 
 typedef struct dlst_node(INSTANCE) {

@@ -27,7 +27,7 @@
         when it's size is to small to perform a push call
         O(n) memory complexity
     */
-    #define darr(inst) RIFF_NAME(darr, inst)
+    #define darr(inst) RIFF_INST(darr, inst)
 #endif
 
 typedef struct darr(INSTANCE) {
