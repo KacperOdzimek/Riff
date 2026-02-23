@@ -44,16 +44,12 @@
 // error flag
 #define ERR 0
 
+// second layer, just to ensure correct expansion
+#define RIFF_PASS_VAARGS(...) __VA_ARGS__
+
 // dispatch A macro
-#define RIFF_ALLOC   RIFF_FIRST(A)
-#define RIFF_REALLOC RIFF_SECOND(A)
-#define RIFF_FREE    RIFF_THIRD(A)
+#define RIFF_ALLOC   RIFF_FIRST(RIFF_PASS_VAARGS(A))
+#define RIFF_REALLOC RIFF_SECOND(RIFF_PASS_VAARGS(A))
+#define RIFF_FREE    RIFF_THIRD(RIFF_PASS_VAARGS(A))
 
 #endif // GENERIC_H
-
-// do on every include:
-
-// default allocator
-#ifndef A
-    #define A malloc, realloc, free
-#endif

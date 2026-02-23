@@ -5,6 +5,14 @@
 
 #include "generic.h"
 
+#ifndef T
+    #error No "T" macro definied at the time of inclusion. Note T macros are undef at the end of every data structure header.
+#endif
+
+#ifndef A
+    #error No "A" macro definied at the time of inclusion. Note A macros are undef at the end of every data structure header.
+#endif
+
 /*
     Unpack and Helpers
 */
@@ -246,3 +254,7 @@ void RIFF_INST(darr_clear, INSTANCE)(darr(INSTANCE)* arr) {
 #undef INSTANCE
 #undef STORED
 #undef DESTRUCTOR
+
+// consume parameters
+#undef T
+#undef A

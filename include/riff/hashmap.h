@@ -9,6 +9,14 @@
 
 #include "generic.h"
 
+#ifndef T
+    #error No "T" macro definied at the time of inclusion. Note T macros are undef at the end of every data structure header.
+#endif
+
+#ifndef A
+    #error No "A" macro definied at the time of inclusion. Note A macros are undef at the end of every data structure header.
+#endif
+
 /*
     Unpack and Helpers
 */
@@ -296,3 +304,7 @@ void RIFF_INST(hmap_clear, INSTANCE)(hmap(INSTANCE)* tar) {
 #undef HASH_NONE
 #undef HASH_FULL
 #undef HASH_TOMB
+
+// consume parameters
+#undef T
+#undef A
