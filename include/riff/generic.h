@@ -39,6 +39,9 @@
 // for making instances-names
 #define RIFF_INST(thing, instance_name) RIFF_CAT(RIFF_CAT(riff_implementation_of_, thing), RIFF_CAT(_for_, instance_name))
 
+// for defining functions
+#define RIFF_API(ret) static inline ret
+
 // success flag
 #define SCC 1
 
