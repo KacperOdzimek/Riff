@@ -10,11 +10,11 @@
 #include "generic.h"
 
 #ifndef T
-    #error No "T" macro definied at the time of inclusion. Note T macros are undef at the end of every data structure header.
+    #error No "T" macro defined at the time of inclusion. Note T macros are undef at the end of every data structure header.
 #endif
 
 #ifndef A
-    #error No "A" macro definied at the time of inclusion. Note A macros are undef at the end of every data structure header.
+    #error No "A" macro defined at the time of inclusion. Note A macros are undef at the end of every data structure header.
 #endif
 
 /*
@@ -155,7 +155,7 @@ int RIFF_INST(hmap_rehash, INSTANCE)(hmap(INSTANCE)* tar, size_t new_capacity) {
 }
 
 #ifndef hmap_rehash
-    // Rebuild iternal arrays inside hashmap
+    // Rebuild internal arrays inside hashmap
     // May fail (new_capacity to small to fit, or allocation failure), O(n)
     #define hmap_rehash(inst) RIFF_INST(hmap_rehash, inst)
 #endif

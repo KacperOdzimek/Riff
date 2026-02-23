@@ -6,11 +6,11 @@
 #include "generic.h"
 
 #ifndef T
-    #error No "T" macro definied at the time of inclusion. Note T macros are undef at the end of every data structure header.
+    #error No "T" macro defined at the time of inclusion. Note T macros are undef at the end of every data structure header.
 #endif
 
 #ifndef A
-    #error No "A" macro definied at the time of inclusion. Note A macros are undef at the end of every data structure header.
+    #error No "A" macro defined at the time of inclusion. Note A macros are undef at the end of every data structure header.
 #endif
 
 /*
@@ -63,7 +63,7 @@ void RIFF_INST(dlst_zero, INSTANCE)(dlst(INSTANCE)* tar) {
 }
 
 #ifndef dlst_zero
-    // Makes unitialized memory proper 0-initialized empty list
+    // Makes uninitialized memory proper 0-initialized empty list
     // Does not free anything
     #define dlst_zero(inst) RIFF_INST(dlst_zero, inst)
 #endif

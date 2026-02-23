@@ -6,11 +6,11 @@
 #include "generic.h"
 
 #ifndef T
-    #error No "T" macro definied at the time of inclusion. Note T macros are undef at the end of every data structure header.
+    #error No "T" macro defined at the time of inclusion. Note T macros are undef at the end of every data structure header.
 #endif
 
 #ifndef A
-    #error No "A" macro definied at the time of inclusion. Note A macros are undef at the end of every data structure header.
+    #error No "A" macro defined at the time of inclusion. Note A macros are undef at the end of every data structure header.
 #endif
 
 /*
@@ -32,7 +32,7 @@
     /*
         Dynamic Array (darr)
         Data structure, dynamically resizing, 
-        when it's size is to small to perform a push call
+        when it's size is too small to perform a push call
         O(n) memory complexity
     */
     #define darr(inst) RIFF_INST(darr, inst)
@@ -90,7 +90,7 @@ int RIFF_INST(darr_reserve, INSTANCE)(darr(INSTANCE)* arr, size_t capacity) {
 
 #ifndef darr_reserve
     // Ensures dynamic array have at least given capacity (in total, not left)
-    // May fail, O(1) else realocation time complexity
+    // May fail, O(1) else reallocation time complexity
     #define darr_reserve(inst) RIFF_INST(darr_reserve, inst)
 #endif
 
@@ -106,7 +106,7 @@ int RIFF_INST(darr_shrink_to_fit, INSTANCE)(darr(INSTANCE)* arr) {
     
     // realloc block
     STORED* new_data = RIFF_REALLOC(arr->priv_data, new_cap * sizeof(STORED));
-    if (!new_data) return ERR; // realocation failed
+    if (!new_data) return ERR; // reallocation failed
 
     arr->priv_data = new_data;
     arr->priv_capc = new_cap;
@@ -114,9 +114,9 @@ int RIFF_INST(darr_shrink_to_fit, INSTANCE)(darr(INSTANCE)* arr) {
 }
 
 #ifndef darr_shrink_to_fit
-    // Realoc array's memory into a block which tightly fit (to a minimum of 1 object)
-    // arrays elements. If already shrunk, no effect.
-    // May fail, O(1) else realocation time compelxity
+    // Realoc array's memory into a block which tightly fit arrays elements. 
+    // If already shrunk, no effect.
+    // May fail, O(1) else reallocation time complexity
     #define darr_shrink_to_fit(inst) RIFF_INST(darr_shrink_to_fit, inst)
 #endif
 

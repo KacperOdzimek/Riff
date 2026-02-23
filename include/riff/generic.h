@@ -32,6 +32,7 @@
 #define RIFF_TENTH_IMPL(a,b,c,d,e,f,g,h,i,j, ...) j
 #define RIFF_TENTH(...)   RIFF_TENTH_IMPL(__VA_ARGS__)
 
+// fir joining texts together
 #define RIFF_CAT_IMPL(a, b) a##b
 #define RIFF_CAT(a, b)  RIFF_CAT_IMPL(a, b)
 
