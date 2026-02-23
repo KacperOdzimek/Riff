@@ -61,7 +61,7 @@ typedef struct hmap(INSTANCE) {
     Zero / Destruction
 */
 
-void RIFF_INST(hmap_zero, INSTANCE)(hmap(INSTANCE)* tar) {
+RIFF_API(void) RIFF_INST(hmap_zero, INSTANCE)(hmap(INSTANCE)* tar) {
     tar->priv_used   = 0;
     tar->priv_keys   = 0;
     tar->priv_values = 0;
@@ -75,7 +75,7 @@ void RIFF_INST(hmap_zero, INSTANCE)(hmap(INSTANCE)* tar) {
     #define hmap_zero(inst) RIFF_INST(hmap_zero, inst)
 #endif
 
-void RIFF_INST(hmap_destroy, INSTANCE)(hmap(INSTANCE) *tar) {
+RIFF_API(void) RIFF_INST(hmap_destroy, INSTANCE)(hmap(INSTANCE) *tar) {
     // call destructors
     for (size_t i = 0; i < tar->priv_capc; i++) {
         if (tar->priv_used[i] == HASH_FULL) {
@@ -102,7 +102,7 @@ void RIFF_INST(hmap_destroy, INSTANCE)(hmap(INSTANCE) *tar) {
     Memory
 */
 
-int RIFF_INST(hmap_internal_alloc, INSTANCE)(hmap(INSTANCE)* tar, size_t cap) {
+RIFF_API(int) RIFF_INST(hmap_internal_alloc, INSTANCE)(hmap(INSTANCE)* tar, size_t cap) {
     tar->priv_size = 0;
     tar->priv_capc = cap;
 
@@ -121,9 +121,9 @@ int RIFF_INST(hmap_internal_alloc, INSTANCE)(hmap(INSTANCE)* tar, size_t cap) {
     return SCC;
 }
 
-int RIFF_INST(hmap_push, INSTANCE)(hmap(INSTANCE)* tar, KEY key, VAL value); // forward
+RIFF_API(int) RIFF_INST(hmap_push, INSTANCE)(hmap(INSTANCE)* tar, KEY key, VAL value); // forward
 
-int RIFF_INST(hmap_rehash, INSTANCE)(hmap(INSTANCE)* tar, size_t new_capacity) {
+RIFF_API(int) RIFF_INST(hmap_rehash, INSTANCE)(hmap(INSTANCE)* tar, size_t new_capacity) {
     // null state now, just alloc
     if (tar->priv_capc == 0) return RIFF_INST(hmap_internal_alloc, INSTANCE)(tar, new_capacity);
 
@@ -164,7 +164,7 @@ int RIFF_INST(hmap_rehash, INSTANCE)(hmap(INSTANCE)* tar, size_t new_capacity) {
     Operations
 */
 
-int RIFF_INST(hmap_push, INSTANCE)(hmap(INSTANCE)* tar, KEY key, VAL value) {
+RIFF_API(int) RIFF_INST(hmap_push, INSTANCE)(hmap(INSTANCE)* tar, KEY key, VAL value) {
     // If none memory assigned, allocate
     if (tar->priv_capc == 0) {
         int scc = RIFF_INST(hmap_internal_alloc, INSTANCE)(tar, INIT_CAPC);
@@ -219,7 +219,7 @@ int RIFF_INST(hmap_push, INSTANCE)(hmap(INSTANCE)* tar, KEY key, VAL value) {
     #define hmap_push(inst) RIFF_INST(hmap_push, inst)
 #endif
 
-int RIFF_INST(hmap_find, INSTANCE)(hmap(INSTANCE)* tar, KEY user_key, const KEY** inner_key, VAL** value) {
+RIFF_API(int) RIFF_INST(hmap_find, INSTANCE)(hmap(INSTANCE)* tar, KEY user_key, const KEY** inner_key, VAL** value) {
     if (tar->priv_capc == 0) return ERR; // empty map -> nothing can be found
 
     size_t idx = HASH(&user_key) % tar->priv_capc;
@@ -251,7 +251,7 @@ int RIFF_INST(hmap_find, INSTANCE)(hmap(INSTANCE)* tar, KEY user_key, const KEY*
     #define hmap_find(inst) RIFF_INST(hmap_find, inst)
 #endif
 
-void RIFF_INST(hmap_pop, INSTANCE)(hmap(INSTANCE)* tar, const KEY* INNER_key, VAL* out) {
+RIFF_API(void) RIFF_INST(hmap_pop, INSTANCE)(hmap(INSTANCE)* tar, const KEY* INNER_key, VAL* out) {
     size_t pos = INNER_key - tar->priv_keys;
 
     if (out)  *out = tar->priv_values[pos];
@@ -274,7 +274,7 @@ void RIFF_INST(hmap_pop, INSTANCE)(hmap(INSTANCE)* tar, const KEY* INNER_key, VA
     #define hmap_pop(inst) RIFF_INST(hmap_pop, inst)
 #endif
 
-void RIFF_INST(hmap_clear, INSTANCE)(hmap(INSTANCE)* tar) {
+RIFF_API(void) RIFF_INST(hmap_clear, INSTANCE)(hmap(INSTANCE)* tar) {
     for (size_t i = 0; i < tar->priv_capc; i++) {
         if (tar->priv_used[i] == HASH_FULL) {
             KEY_DEST(&tar->priv_keys[i]);

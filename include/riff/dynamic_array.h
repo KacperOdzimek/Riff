@@ -48,7 +48,7 @@ typedef struct darr(INSTANCE) {
     Zero / Destruction
 */
 
-void RIFF_INST(darr_zero, INSTANCE)(darr(INSTANCE)* tar) {
+RIFF_API(void) RIFF_INST(darr_zero, INSTANCE)(darr(INSTANCE)* tar) {
     tar->priv_size = 0;
     tar->priv_capc = 0;
     tar->priv_data = 0;
@@ -60,7 +60,7 @@ void RIFF_INST(darr_zero, INSTANCE)(darr(INSTANCE)* tar) {
     #define darr_zero(inst) RIFF_INST(darr_zero, inst)
 #endif
 
-void RIFF_INST(darr_destroy, INSTANCE)(darr(INSTANCE)* tar) {
+RIFF_API(void) RIFF_INST(darr_destroy, INSTANCE)(darr(INSTANCE)* tar) {
     DESTRUCTOR_LOOP(tar->priv_data, tar->priv_data + tar->priv_size);
     RIFF_FREE(tar->priv_data);
     darr_zero(INSTANCE)(tar);
@@ -76,7 +76,7 @@ void RIFF_INST(darr_destroy, INSTANCE)(darr(INSTANCE)* tar) {
     Memory
 */
 
-int RIFF_INST(darr_reserve, INSTANCE)(darr(INSTANCE)* arr, size_t capacity) {
+RIFF_API(int) RIFF_INST(darr_reserve, INSTANCE)(darr(INSTANCE)* arr, size_t capacity) {
     if (arr->priv_capc >= capacity) return SCC; // already have
     
     // realloc into bigger block
@@ -94,7 +94,7 @@ int RIFF_INST(darr_reserve, INSTANCE)(darr(INSTANCE)* arr, size_t capacity) {
     #define darr_reserve(inst) RIFF_INST(darr_reserve, inst)
 #endif
 
-int RIFF_INST(darr_shrink_to_fit, INSTANCE)(darr(INSTANCE)* arr) {
+RIFF_API(int) RIFF_INST(darr_shrink_to_fit, INSTANCE)(darr(INSTANCE)* arr) {
     size_t new_cap = arr->priv_size;
     if (arr->priv_capc == new_cap) return SCC; // already shrunk
 
@@ -124,7 +124,7 @@ int RIFF_INST(darr_shrink_to_fit, INSTANCE)(darr(INSTANCE)* arr) {
     Getters
 */
 
-size_t RIFF_INST(darr_size, INSTANCE)(darr(INSTANCE)* arr) {
+RIFF_API(size_t) RIFF_INST(darr_size, INSTANCE)(darr(INSTANCE)* arr) {
     return arr->priv_size;
 }
 
@@ -133,7 +133,7 @@ size_t RIFF_INST(darr_size, INSTANCE)(darr(INSTANCE)* arr) {
     #define darr_size(inst) RIFF_INST(darr_size, inst)
 #endif
 
-size_t RIFF_INST(darr_capacity, INSTANCE)(darr(INSTANCE)* arr) {
+RIFF_API(size_t) RIFF_INST(darr_capacity, INSTANCE)(darr(INSTANCE)* arr) {
     return arr->priv_capc;
 }
 
@@ -146,7 +146,7 @@ size_t RIFF_INST(darr_capacity, INSTANCE)(darr(INSTANCE)* arr) {
     Access
 */
 
-STORED* RIFF_INST(darr_access, INSTANCE)(darr(INSTANCE)* arr) {
+RIFF_API(STORED*) RIFF_INST(darr_access, INSTANCE)(darr(INSTANCE)* arr) {
     return (STORED*)arr->priv_data;
 }
 
@@ -159,7 +159,7 @@ STORED* RIFF_INST(darr_access, INSTANCE)(darr(INSTANCE)* arr) {
     #define darr_access(inst) RIFF_INST(darr_access, inst)
 #endif
 
-const STORED* RIFF_INST(darr_const_access, INSTANCE)(const darr(INSTANCE)* arr) {
+RIFF_API(const STORED*) RIFF_INST(darr_const_access, INSTANCE)(const darr(INSTANCE)* arr) {
     return (const STORED*)arr->priv_data;
 }
 
@@ -174,7 +174,7 @@ const STORED* RIFF_INST(darr_const_access, INSTANCE)(const darr(INSTANCE)* arr) 
     Operations
 */
 
-int RIFF_INST(darr_push, INSTANCE)(darr(INSTANCE)* arr, STORED value) {
+RIFF_API(int) RIFF_INST(darr_push, INSTANCE)(darr(INSTANCE)* arr, STORED value) {
     if (arr->priv_size >= arr->priv_capc) {
         size_t new_cap = arr->priv_capc ? arr->priv_capc * 2 : 1;
         void* new_data = (STORED*)RIFF_REALLOC(arr->priv_data, new_cap * sizeof(STORED));
@@ -194,7 +194,7 @@ int RIFF_INST(darr_push, INSTANCE)(darr(INSTANCE)* arr, STORED value) {
     #define darr_push(inst) RIFF_INST(darr_push, inst)
 #endif
 
-int RIFF_INST(darr_pop, INSTANCE)(darr(INSTANCE)* arr, STORED* out) {
+RIFF_API(int) RIFF_INST(darr_pop, INSTANCE)(darr(INSTANCE)* arr, STORED* out) {
     if (arr->priv_size == 0) return ERR; // nothing to pop
     arr->priv_size--;
 
@@ -214,7 +214,7 @@ int RIFF_INST(darr_pop, INSTANCE)(darr(INSTANCE)* arr, STORED* out) {
     #define darr_pop(inst) RIFF_INST(darr_pop, inst)
 #endif
 
-int RIFF_INST(darr_pop_many, INSTANCE)(darr(INSTANCE)* arr, STORED* out, size_t amount) {
+RIFF_API(int) RIFF_INST(darr_pop_many, INSTANCE)(darr(INSTANCE)* arr, STORED* out, size_t amount) {
     if (arr->priv_size < amount) return ERR; // not enough elements
 
     size_t first = arr->priv_size - amount;
@@ -237,7 +237,7 @@ int RIFF_INST(darr_pop_many, INSTANCE)(darr(INSTANCE)* arr, STORED* out, size_t 
     #define darr_pop_many(inst) RIFF_INST(darr_pop_many, inst)
 #endif
 
-void RIFF_INST(darr_clear, INSTANCE)(darr(INSTANCE)* arr) {
+RIFF_API(void) RIFF_INST(darr_clear, INSTANCE)(darr(INSTANCE)* arr) {
     DESTRUCTOR_LOOP(arr->priv_data, arr->priv_data + arr->priv_size);
     arr->priv_size = 0;
 }

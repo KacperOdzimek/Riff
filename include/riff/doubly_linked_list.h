@@ -56,7 +56,7 @@ typedef struct dlst(INSTANCE) {
     Zero / Destruction
 */
 
-void RIFF_INST(dlst_zero, INSTANCE)(dlst(INSTANCE)* tar) {
+RIFF_API(void) RIFF_INST(dlst_zero, INSTANCE)(dlst(INSTANCE)* tar) {
     tar->priv_size  = 0;
     tar->priv_first = NULL;
     tar->priv_last  = NULL;
@@ -68,7 +68,7 @@ void RIFF_INST(dlst_zero, INSTANCE)(dlst(INSTANCE)* tar) {
     #define dlst_zero(inst) RIFF_INST(dlst_zero, inst)
 #endif
 
-void RIFF_INST(dlst_destroy, INSTANCE)(dlst(INSTANCE)* tar) {
+RIFF_API(void) RIFF_INST(dlst_destroy, INSTANCE)(dlst(INSTANCE)* tar) {
     dlst_node(INSTANCE)* cur = tar->priv_first;
     while (cur) {
         dlst_node(INSTANCE)* next = cur->priv_next;
@@ -89,7 +89,7 @@ void RIFF_INST(dlst_destroy, INSTANCE)(dlst(INSTANCE)* tar) {
     Getters
 */
 
-size_t RIFF_INST(dlst_size, INSTANCE)(const dlst(INSTANCE)* tar) {
+RIFF_API(size_t) RIFF_INST(dlst_size, INSTANCE)(const dlst(INSTANCE)* tar) {
     return tar->priv_size;
 }
 
@@ -103,7 +103,7 @@ size_t RIFF_INST(dlst_size, INSTANCE)(const dlst(INSTANCE)* tar) {
     Node Operations
 */
 
-dlst_node(INSTANCE)* RIFF_INST(dlst_first, INSTANCE)(const dlst(INSTANCE)* tar) {
+RIFF_API(dlst_node(INSTANCE)*) RIFF_INST(dlst_first, INSTANCE)(const dlst(INSTANCE)* tar) {
     return tar->priv_first;
 }
 
@@ -114,7 +114,7 @@ dlst_node(INSTANCE)* RIFF_INST(dlst_first, INSTANCE)(const dlst(INSTANCE)* tar) 
     #define dlst_first(inst) RIFF_INST(dlst_first, inst)
 #endif
 
-dlst_node(INSTANCE)* RIFF_INST(dlst_last, INSTANCE)(const dlst(INSTANCE)* tar) {
+RIFF_API(dlst_node(INSTANCE)*) RIFF_INST(dlst_last, INSTANCE)(const dlst(INSTANCE)* tar) {
     return tar->priv_last;
 }
 
@@ -125,7 +125,7 @@ dlst_node(INSTANCE)* RIFF_INST(dlst_last, INSTANCE)(const dlst(INSTANCE)* tar) {
     #define dlst_last(inst) RIFF_INST(dlst_last, inst)
 #endif
 
-dlst_node(INSTANCE)* RIFF_INST(dlst_next, INSTANCE)(dlst_node(INSTANCE)* n) {
+RIFF_API(dlst_node(INSTANCE)*) RIFF_INST(dlst_next, INSTANCE)(dlst_node(INSTANCE)* n) {
     return n ? n->priv_next : NULL;
 }
 
@@ -137,7 +137,7 @@ dlst_node(INSTANCE)* RIFF_INST(dlst_next, INSTANCE)(dlst_node(INSTANCE)* n) {
     #define dlst_next(inst) RIFF_INST(dlst_next, inst)
 #endif
 
-dlst_node(INSTANCE)* RIFF_INST(dlst_prev, INSTANCE)(dlst_node(INSTANCE)* n) {
+RIFF_API(dlst_node(INSTANCE)*) RIFF_INST(dlst_prev, INSTANCE)(dlst_node(INSTANCE)* n) {
     return n ? n->priv_prev : NULL;
 }
 
@@ -149,7 +149,7 @@ dlst_node(INSTANCE)* RIFF_INST(dlst_prev, INSTANCE)(dlst_node(INSTANCE)* n) {
     #define dlst_prev(inst) RIFF_INST(dlst_prev, inst)
 #endif
 
-STORED* RIFF_INST(dlst_access, INSTANCE)(dlst_node(INSTANCE)* n) {
+RIFF_API(STORED*) RIFF_INST(dlst_access, INSTANCE)(dlst_node(INSTANCE)* n) {
     return &n->priv_obj;
 }
 
@@ -160,7 +160,7 @@ STORED* RIFF_INST(dlst_access, INSTANCE)(dlst_node(INSTANCE)* n) {
     #define dlst_access(inst) RIFF_INST(dlst_access, inst)
 #endif
 
-const STORED* RIFF_INST(dlst_const_access, INSTANCE)(dlst_node(INSTANCE)* n) {
+RIFF_API(const STORED*) RIFF_INST(dlst_const_access, INSTANCE)(dlst_node(INSTANCE)* n) {
     return &n->priv_obj;
 }
 
@@ -174,7 +174,7 @@ const STORED* RIFF_INST(dlst_const_access, INSTANCE)(dlst_node(INSTANCE)* n) {
     Operations
 */
 
-dlst_node(INSTANCE)* RIFF_INST(dlst_push_before, INSTANCE)(dlst(INSTANCE)* tar, dlst_node(INSTANCE)* before, STORED value) {
+RIFF_API(dlst_node(INSTANCE)*) RIFF_INST(dlst_push_before, INSTANCE)(dlst(INSTANCE)* tar, dlst_node(INSTANCE)* before, STORED value) {
     dlst_node(INSTANCE)* new_node = (dlst_node(INSTANCE)*)RIFF_ALLOC(sizeof(dlst_node(INSTANCE)));
     if (!new_node) return NULL;
 
@@ -214,7 +214,7 @@ dlst_node(INSTANCE)* RIFF_INST(dlst_push_before, INSTANCE)(dlst(INSTANCE)* tar, 
     #define dlst_push_before(inst) RIFF_INST(dlst_push_before, inst)
 #endif
 
-dlst_node(INSTANCE)* RIFF_INST(dlst_push_after, INSTANCE)(dlst(INSTANCE)* tar, dlst_node(INSTANCE)* after, STORED value) {
+RIFF_API(dlst_node(INSTANCE)*) RIFF_INST(dlst_push_after, INSTANCE)(dlst(INSTANCE)* tar, dlst_node(INSTANCE)* after, STORED value) {
     dlst_node(INSTANCE)* new_node = (dlst_node(INSTANCE)*)RIFF_ALLOC(sizeof(dlst_node(INSTANCE)));
     if (!new_node) return NULL;
 
@@ -254,7 +254,7 @@ dlst_node(INSTANCE)* RIFF_INST(dlst_push_after, INSTANCE)(dlst(INSTANCE)* tar, d
     #define dlst_push_after(inst) RIFF_INST(dlst_push_after, inst)
 #endif
 
-void RIFF_INST(dlst_pop, INSTANCE)(dlst(INSTANCE)* tar, dlst_node(INSTANCE)* n, STORED* out) {
+RIFF_API(void) RIFF_INST(dlst_pop, INSTANCE)(dlst(INSTANCE)* tar, dlst_node(INSTANCE)* n, STORED* out) {
     // get rid of object
     if (out) *out = n->priv_obj;
     else DESTRUCTOR(&n->priv_obj);
@@ -280,7 +280,7 @@ void RIFF_INST(dlst_pop, INSTANCE)(dlst(INSTANCE)* tar, dlst_node(INSTANCE)* n, 
     #define dlst_pop(inst) RIFF_INST(dlst_pop, inst)
 #endif
 
-void RIFF_INST(dlst_clear, INSTANCE)(dlst(INSTANCE)* tar) {
+RIFF_API(void) RIFF_INST(dlst_clear, INSTANCE)(dlst(INSTANCE)* tar) {
     dlst_destroy(INSTANCE)(tar); // apparently the same
 }
 
