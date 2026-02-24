@@ -25,14 +25,10 @@
     Typedef
 */
 
-#ifndef queue
-    /*
-        Queue (queue)
-        Standard queue structure, implemented as circular buffer, O(1) push and pop
-        O(n) memory complexity
-    */
-    #define queue(inst) RIFF_INST(queue, inst)
-#endif
+// Queue (queue)
+// Standard queue structure, implemented as circular buffer, O(1) push and pop
+// O(n) memory complexity
+#define queue(inst) RIFF_INST(queue, inst)
 
 typedef struct queue(INSTANCE) {
     size_t  priv_front; // inc
@@ -45,20 +41,22 @@ typedef struct queue(INSTANCE) {
     Zero / Destruction
 */
 
-RIFF_API(void) RIFF_INST(queue_zero, INSTANCE)(queue(INSTANCE)* tar) {
+// Makes unitialized memory proper 0-initialized empty queue
+// Does not free anything
+#define queue_zero(inst) RIFF_INST(queue_zero, inst)
+
+RIFF_API(void) queue_zero(INSTANCE)(queue(INSTANCE)* tar) {
     tar->priv_front = 0;
     tar->priv_end   = 0;
     tar->priv_capc  = 0;
     tar->priv_data = NULL;
 }
 
-#ifndef queue_zero
-    // Makes unitialized memory proper 0-initialized empty queue
-    // Does not free anything
-    #define queue_zero(inst) RIFF_INST(queue_zero, inst)
-#endif
+// Properly destroys given queue
+// O(n) if destructor definied, O(1) otherwise
+#define queue_destroy(inst) RIFF_INST(queue_destroy, inst)
 
-RIFF_API(void) RIFF_INST(queue_destroy, INSTANCE)(queue(INSTANCE)* tar) {
+RIFF_API(void) queue_destroy(INSTANCE)(queue(INSTANCE)* tar) {
     if (tar->priv_data) {
         while (tar->priv_front != tar->priv_end) {
             DESTRUCTOR(&tar->priv_data[tar->priv_front]);
@@ -70,43 +68,37 @@ RIFF_API(void) RIFF_INST(queue_destroy, INSTANCE)(queue(INSTANCE)* tar) {
     queue_zero(INSTANCE)(tar);
 }
 
-#ifndef queue_destroy
-    // Properly destroys given queue
-    // O(n) if destructor definied, O(1) otherwise
-    #define queue_destroy(inst) RIFF_INST(queue_destroy, inst)
-#endif
-
 /*
     Query
 */
 
-RIFF_API(int) RIFF_INST(queue_empty, INSTANCE)(queue(INSTANCE)* tar) {
+// Returns whether the queue is empty
+// O(1)
+#define queue_empty(inst) RIFF_INST(queue_empty, inst)
+
+RIFF_API(int) queue_empty(INSTANCE)(queue(INSTANCE)* tar) {
     return tar->priv_front == tar->priv_end;
 }
 
-#ifndef queue_empty
-    // Returns whether the queue is empty
-    // O(1)
-    #define queue_empty(inst) RIFF_INST(queue_empty, inst)
-#endif
+// Returns amount of elements inside queue
+// O(1)
+#define queue_size(inst) RIFF_INST(queue_size, inst)
 
-RIFF_API(size_t) RIFF_INST(queue_size, INSTANCE)(queue(INSTANCE)* tar) {
+RIFF_API(size_t) queue_size(INSTANCE)(queue(INSTANCE)* tar) {
     return (tar->priv_front <= tar->priv_end) ?
         (tar->priv_end - tar->priv_front) :                 // when not wrapped
         (tar->priv_capc - tar->priv_front + tar->priv_end); // when wrapped
 }
 
-#ifndef queue_size
-    // Returns amount of elements inside queue
-    // O(1)
-    #define queue_size(inst) RIFF_INST(queue_size, inst)
-#endif
-
 /*
     Operations
 */
 
-RIFF_API(int) RIFF_INST(queue_push, INSTANCE)(queue(INSTANCE)* tar, STORED val) {
+// Pushes element at the queue's end
+// May fail (if need to alloc/realloc circular buffer), O(1) avg
+#define queue_push(inst) RIFF_INST(queue_push, inst)
+
+RIFF_API(int) queue_push(INSTANCE)(queue(INSTANCE)* tar, STORED val) {
     // queue 0-init
     if (tar->priv_capc == 0) {
         size_t  new_capc = 4;
@@ -156,25 +148,23 @@ RIFF_API(int) RIFF_INST(queue_push, INSTANCE)(queue(INSTANCE)* tar, STORED val) 
     return SCC;
 }
 
-#ifndef queue_push
-    // Pushes element at the queue's end
-    // May fail (if need to alloc/realloc circular buffer), O(1) avg
-    #define queue_push(inst) RIFF_INST(queue_push, inst)
-#endif
+// Returns pointer to the element at the queue's front
+// Retruns NULL if no queue empty
+// O(1)
+#define queue_top(inst) RIFF_INST(queue_top, inst)
 
-RIFF_API(STORED*) RIFF_INST(queue_top, INSTANCE)(queue(INSTANCE)* tar) {
+RIFF_API(STORED*) queue_top(INSTANCE)(queue(INSTANCE)* tar) {
     if (queue_empty(INSTANCE)(tar)) return NULL;
     return &tar->priv_data[tar->priv_front];
 }
 
-#ifndef queue_top
-    // Returns pointer to the element at the queue's front
-    // Retruns NULL if no queue empty
-    // O(1)
-    #define queue_top(inst) RIFF_INST(queue_top, inst)
-#endif
+// Pops out the front element from the queue 
+// If   out == NULL the element will be destructed
+// Else *out = element and the caller does own the element on from now
+// May fail (empty queue), O(1)
+#define queue_pop(inst) RIFF_INST(queue_pop, inst)
 
-RIFF_API(int) RIFF_INST(queue_pop, INSTANCE)(queue(INSTANCE)* tar, STORED* out) {
+RIFF_API(int) queue_pop(INSTANCE)(queue(INSTANCE)* tar, STORED* out) {
     if (queue_empty(INSTANCE)(tar)) return ERR;
 
     // tranfer or destroy
@@ -188,10 +178,6 @@ RIFF_API(int) RIFF_INST(queue_pop, INSTANCE)(queue(INSTANCE)* tar, STORED* out) 
     return SCC;
 }
 
-#ifndef queue_pop
-    // Pops out the front element from the queue 
-    // If   out == NULL the element will be destructed
-    // Else *out = element and the caller does own the element on from now
-    // May fail (empty queue), O(1)
-    #define queue_pop(inst) RIFF_INST(queue_pop, inst)
-#endif
+// consume parameters
+#undef T
+#undef A

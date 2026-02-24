@@ -39,15 +39,11 @@
     Typedef
 */
 
-#ifndef hhmap
-    /*
-        Hash Map (hhmap)
-        Hash map implementation with linear probing.
-        Allow for avg. O(1) access to elements by it's keys.
-        O(n) memory complexity
-    */
-    #define hhmap(inst) RIFF_INST(hhmap, inst)
-#endif
+// Hash Map (hhmap)
+// Hash map implementation with linear probing.
+// Allow for avg. O(1) access to elements by it's keys.
+// O(n) memory complexity
+#define hhmap(inst) RIFF_INST(hhmap, inst)
 
 typedef struct hhmap(INSTANCE) {
     char*   priv_used;
@@ -61,6 +57,10 @@ typedef struct hhmap(INSTANCE) {
     Zero / Destruction
 */
 
+// Makes unitialized memory proper 0-initialized empty hashhmap
+// Does not free anything
+#define hhmap_zero(inst) RIFF_INST(hhmap_zero, inst)
+
 RIFF_API(void) RIFF_INST(hhmap_zero, INSTANCE)(hhmap(INSTANCE)* tar) {
     tar->priv_used   = 0;
     tar->priv_keys   = 0;
@@ -69,11 +69,9 @@ RIFF_API(void) RIFF_INST(hhmap_zero, INSTANCE)(hhmap(INSTANCE)* tar) {
     tar->priv_capc   = 0;
 }
 
-#ifndef hhmap_zero
-    // Makes unitialized memory proper 0-initialized empty hashhmap
-    // Does not free anything
-    #define hhmap_zero(inst) RIFF_INST(hhmap_zero, inst)
-#endif
+// Frees hashhmap and its keys and values
+// O(n)
+#define hhmap_destroy(inst) RIFF_INST(hhmap_destroy, inst)
 
 RIFF_API(void) RIFF_INST(hhmap_destroy, INSTANCE)(hhmap(INSTANCE) *tar) {
     // call destructors
@@ -91,12 +89,6 @@ RIFF_API(void) RIFF_INST(hhmap_destroy, INSTANCE)(hhmap(INSTANCE) *tar) {
 
     hhmap_zero(INSTANCE)(tar);
 }
-
-#ifndef hhmap_destroy
-    // Frees hashhmap and its keys and values
-    // O(n)
-    #define hhmap_destroy(inst) RIFF_INST(hhmap_destroy, inst)
-#endif
 
 /*
     Memory
@@ -122,6 +114,10 @@ RIFF_API(int) RIFF_INST(hhmap_internal_alloc, INSTANCE)(hhmap(INSTANCE)* tar, si
 }
 
 RIFF_API(int) RIFF_INST(hhmap_push, INSTANCE)(hhmap(INSTANCE)* tar, KEY key, VAL value); // forward
+
+// Rebuild internal arrays inside hashhmap
+// May fail (new_capacity to small to fit, or allocation failure), O(n)
+#define hhmap_rehash(inst) RIFF_INST(hhmap_rehash, inst)
 
 RIFF_API(int) RIFF_INST(hhmap_rehash, INSTANCE)(hhmap(INSTANCE)* tar, size_t new_capacity) {
     // null state now, just alloc
@@ -154,15 +150,14 @@ RIFF_API(int) RIFF_INST(hhmap_rehash, INSTANCE)(hhmap(INSTANCE)* tar, size_t new
     return SCC;
 }
 
-#ifndef hhmap_rehash
-    // Rebuild internal arrays inside hashhmap
-    // May fail (new_capacity to small to fit, or allocation failure), O(n)
-    #define hhmap_rehash(inst) RIFF_INST(hhmap_rehash, inst)
-#endif
-
 /*
     Operations
 */
+
+// Inserts new or replace value at given key
+// Given key and value are owned by the hashhmap on success
+// May fail (if failed to resize), O(1) avg O(n) worst
+#define hhmap_push(inst) RIFF_INST(hhmap_push, inst)
 
 RIFF_API(int) RIFF_INST(hhmap_push, INSTANCE)(hhmap(INSTANCE)* tar, KEY key, VAL value) {
     // If none memory assigned, allocate
@@ -212,12 +207,13 @@ RIFF_API(int) RIFF_INST(hhmap_push, INSTANCE)(hhmap(INSTANCE)* tar, KEY key, VAL
     return ERR;
 }
 
-#ifndef hhmap_push
-    // Inserts new or replace value at given key
-    // Given key and value are owned by the hashhmap on success
-    // May fail (if failed to resize), O(1) avg O(n) worst
-    #define hhmap_push(inst) RIFF_INST(hhmap_push, inst)
-#endif
+// Searches hashhmap for given user_key
+// If succeeded set *key to position of key (changes to it forbiden!)
+// and *value to position of value (can be changed)
+// Note changing the hasmap may lead to invalidation of returned values!
+// *key and *value may be NULL
+// May fail (if no given key), O(1) avg O(n) worst
+#define hhmap_find(inst) RIFF_INST(hhmap_find, inst)
 
 RIFF_API(int) RIFF_INST(hhmap_find, INSTANCE)(hhmap(INSTANCE)* tar, KEY user_key, const KEY** inner_key, VAL** value) {
     if (tar->priv_capc == 0) return ERR; // empty map -> nothing can be found
@@ -241,15 +237,15 @@ RIFF_API(int) RIFF_INST(hhmap_find, INSTANCE)(hhmap(INSTANCE)* tar, KEY user_key
     return ERR;
 }
 
-#ifndef hhmap_find
-    // Searches hashhmap for given user_key
-    // If succeeded set *key to position of key (changes to it forbiden!)
-    // and *value to position of value (can be changed)
-    // Note changing the hasmap may lead to invalidation of returned values!
-    // *key and *value may be NULL
-    // May fail (if no given key), O(1) avg O(n) worst
-    #define hhmap_find(inst) RIFF_INST(hhmap_find, inst)
-#endif
+// This function removes given key from the map
+//
+// IMPORTANT
+// INNER_key must be result of hhmap_find, (const KEY** inner_key)
+// called otherwise this function will lead to segfaults
+//
+// if out is NULL, stored value will be destructed (if destructor provided)
+// otherwise it will be moved into *out
+#define hhmap_pop(inst) RIFF_INST(hhmap_pop, inst)
 
 RIFF_API(void) RIFF_INST(hhmap_pop, INSTANCE)(hhmap(INSTANCE)* tar, const KEY* INNER_key, VAL* out) {
     size_t pos = INNER_key - tar->priv_keys;
@@ -262,17 +258,9 @@ RIFF_API(void) RIFF_INST(hhmap_pop, INSTANCE)(hhmap(INSTANCE)* tar, const KEY* I
     tar->priv_size--;
 }
 
-#ifndef hhmap_pop
-    // This function removes given key from the map
-    //
-    // IMPORTANT
-    // INNER_key must be result of hhmap_find, (const KEY** inner_key)
-    // called otherwise this function will lead to segfaults
-    //
-    // if out is NULL, stored value will be destructed (if destructor provided)
-    // otherwise it will be moved into *out
-    #define hhmap_pop(inst) RIFF_INST(hhmap_pop, inst)
-#endif
+// Clears map
+// O(n)
+#define hhmap_clear(inst) RIFF_INST(hhmap_clear, inst)
 
 RIFF_API(void) RIFF_INST(hhmap_clear, INSTANCE)(hhmap(INSTANCE)* tar) {
     for (size_t i = 0; i < tar->priv_capc; i++) {
@@ -284,12 +272,6 @@ RIFF_API(void) RIFF_INST(hhmap_clear, INSTANCE)(hhmap(INSTANCE)* tar) {
     }
     tar->priv_size = 0;
 }
-
-#ifndef hhmap_clear
-    // Clears map
-    // O(n)
-    #define hhmap_clear(inst) RIFF_INST(hhmap_clear, inst)
-#endif
 
 #undef INSTANCE
 #undef KEY
