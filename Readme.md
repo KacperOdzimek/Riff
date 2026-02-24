@@ -5,6 +5,7 @@ Collection of header only, C utilities - macros, structures and algorithms, desi
 * Macro framework for creating generic algorithms / data structures
 * Dynamic Array
 * Double-Linked-List
+* Queue
 * Hashmap
 
 ## Conventions
