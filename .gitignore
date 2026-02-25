@@ -5,8 +5,8 @@
 !include
 !include/**
 
-!testing/
-!testing/**
+!tests/
+!tests/**
 
 !Readme.md
 !LICENSE.txt
